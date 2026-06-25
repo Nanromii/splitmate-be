@@ -4,6 +4,8 @@ import { Group } from "./group.entity";
 import { ExpenseSplit } from "./expense-split.entity";
 import { Expense } from "./expense.entity";
 import { Settlement } from "./settlement.entity";
+import { DeviceToken } from "./device-token.entity";
+import { Notification } from "./notification.entity";
 
 @Entity('users')
 export class User extends BaseEntity {
