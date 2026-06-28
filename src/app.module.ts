@@ -5,6 +5,7 @@ import { databaseConfig } from './configs/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { envValidationSchema } from './configs/env-validation.config';
 import { ConfigModule } from '@nestjs/config';
+import { RepositoriesModule } from './modules/repositories/repositories.module';
 
 @Module({
   imports: [
@@ -17,6 +18,8 @@ import { ConfigModule } from '@nestjs/config';
     TypeOrmModule.forRootAsync({
       useFactory: databaseConfig
     }),
+
+    RepositoriesModule,
   ],
   controllers: [
     AppController
