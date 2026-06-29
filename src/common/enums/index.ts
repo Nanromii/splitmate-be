@@ -5,3 +5,5 @@ export * from './audit-action.enum';
 export * from './currency.enum';
 export * from './file-entity-type.enum';
 export * from './notification-type.enum';
+export * from './auth.enum';
+export * from './session.enum';

@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { envValidationSchema } from './configs/env-validation.config';
 import { ConfigModule } from '@nestjs/config';
 import { RepositoriesModule } from './modules/repositories/repositories.module';
+import { UsersModule } from './modules/users/users.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
 
 @Module({
   imports: [
@@ -20,6 +22,9 @@ import { RepositoriesModule } from './modules/repositories/repositories.module';
     }),
 
     RepositoriesModule,
+    UsersModule,
+    SessionsModule,
+    SessionsModule,
   ],
   controllers: [
     AppController
