@@ -1,70 +1,74 @@
-# Architecture
+# Kiến trúc
 
-## System overview
+## Tổng quan hệ thống
 
-The current application is a single NestJS service. `src/main.ts` bootstraps the app, enables CORS, registers a global `ValidationPipe`, sets the global prefix to `api/v1`, and exposes Swagger at `api/docs`. `src/app.module.ts` wires together global config, TypeORM, the repository module, users/sessions scaffolds, and the auth module.
+Ứng dụng hiện là một NestJS service. `src/main.ts` bootstrap app, bật CORS, đăng ký global `ValidationPipe`, đặt global prefix `api/v1` và mở Swagger tại `api/docs`. `src/app.module.ts` nối global config, TypeORM, repository module, users/sessions scaffold và auth module.
 
-## Main modules
+## Module chính
 
 - `AppModule`: root module.
-- `ConfigModule`: global environment loading and Joi validation.
-- `TypeOrmModule`: PostgreSQL connection setup.
-- `RepositoriesModule`: custom repositories for `User`, `Expense`, `Group`, `GroupMember`, and `Settlement`.
-- `AuthModule`: Google login, JWT access/refresh tokens, session management, auth guard, and auth DTOs.
-- `UsersModule`: scaffold only.
-- `SessionsModule`: scaffold only.
-- `src/database`: entity definitions for the SplitMate domain.
-- `src/common/enums`: shared enum definitions.
+- `ConfigModule`: load environment toàn cục và validate bằng Joi.
+- `TypeOrmModule`: kết nối PostgreSQL.
+- `RepositoriesModule`: custom repositories cho `User`, `Expense`, `Group`, `GroupMember`, `Settlement` và `Session`.
+- `AuthModule`: Google login, JWT access/refresh tokens, session management, auth guard, request/response DTO, auth messages và auth types.
+- `UsersModule`: scaffold.
+- `SessionsModule`: scaffold.
+- `src/database`: entity definitions cho domain SplitMate.
+- `src/common/enums`: enum dùng chung.
+- `src/common/types`: type dùng chung giữa module, decorator và guard.
 
-## Request flow
+## Luồng request
 
-1. A request enters the Nest application.
-2. Global prefix `api/v1` is applied.
-3. Global `ValidationPipe` runs with `whitelist`, `transform`, and `forbidNonWhitelisted`.
-4. Public auth routes use `@Public()`; protected auth routes use `JwtAuthGuard`.
-5. Controllers call services.
-6. Services use repositories.
-7. Repositories use TypeORM against PostgreSQL.
+1. Request đi vào Nest application.
+2. Global prefix `api/v1` được áp dụng.
+3. Global `ValidationPipe` chạy với `whitelist`, `transform` và `forbidNonWhitelisted`.
+4. Public auth routes dùng `@Public()`; protected auth routes dùng `JwtAuthGuard`.
+5. Controllers gọi services.
+6. Services dùng repositories.
+7. Repositories dùng TypeORM với PostgreSQL.
 
-Current status:
+Trạng thái hiện tại:
 
-- Steps 1 to 3 are implemented in `src/main.ts`.
-- Auth request handlers are implemented in `src/modules/auth/auth.controller.ts`.
-- Other business request handlers are Pending.
+- Bước 1 đến 3 đã triển khai trong `src/main.ts`.
+- Auth request handlers đã triển khai trong `src/modules/auth/auth.controller.ts`.
+- Các business request handler khác Đang chờ bổ sung.
 
-## Layer responsibilities
+## Trách nhiệm từng layer
 
-- `src/main.ts`: bootstrap and global app behavior.
+- `src/main.ts`: bootstrap và global app behavior.
 - `src/app.module.ts`: module composition.
-- `src/configs`: env validation and database configuration.
-- `src/database`: entity mapping and relation metadata.
-- `src/modules/auth`: Google auth endpoints, token/session service logic, guard, DTOs, and Google token verification.
+- `src/configs`: env validation và database configuration.
+- `src/database`: entity mapping và relation metadata.
+- `src/modules/auth`: Google auth endpoints, token/session service logic, guard, request/response DTO, mapper, message constants và Google token verification.
 - `src/modules/repositories`: data access layer.
-- `src/common/enums`: shared domain constants.
+- `src/common/enums`: domain constants dùng chung.
+- `src/common/types`: type dùng chung như `CurrentUser`, `JwtPayload`, `RefreshTokenPayload`, `RequestWithUser`.
 
-## Dependency direction
+## Hướng phụ thuộc
 
-- `main.ts` depends on `AppModule`.
-- `AppModule` depends on `configs`, `RepositoriesModule`, `AuthModule`, `UsersModule`, and `SessionsModule`.
-- `AuthModule` depends on `RepositoriesModule`, `JwtModule`, and global config.
-- `RepositoriesModule` depends on `src/database`.
-- Entities depend on `src/common/enums` and other entities for relations.
+- `main.ts` phụ thuộc `AppModule`.
+- `AppModule` phụ thuộc `configs`, `RepositoriesModule`, `AuthModule`, `UsersModule` và `SessionsModule`.
+- `AuthModule` phụ thuộc `RepositoriesModule`, `JwtModule` và global config.
+- `RepositoriesModule` phụ thuộc `src/database`.
+- Entities phụ thuộc `src/common/enums` và các entity liên quan.
 
-## External services
+## Dịch vụ bên ngoài
 
-- PostgreSQL: configured and used through TypeORM.
-- Google OAuth tokeninfo endpoint: used during Google ID-token login.
-- Redis: env vars and Docker service exist, but application integration is Not implemented yet.
-- Swagger UI: enabled inside the Nest app.
+- PostgreSQL: được cấu hình và dùng qua TypeORM.
+- Google OAuth tokeninfo endpoint: dùng khi verify Google ID token trong login.
+- Redis: env vars và Docker service đã có, nhưng application integration Chưa triển khai.
+- Swagger UI: được bật trong Nest app.
 
-## Important architectural decisions
+## Quyết định kiến trúc quan trọng
 
-- Environment is loaded from `.env.${NODE_ENV || 'development'}.local`.
-- Env validation uses Joi at startup.
-- TypeORM uses `autoLoadEntities: true`.
-- TypeORM uses `synchronize: true`.
-- Data access is currently expressed through custom repository classes instead of feature services.
+- Environment được load từ `.env.${NODE_ENV || 'development'}.local`.
+- Env validation dùng Joi khi startup.
+- TypeORM dùng `autoLoadEntities: true`.
+- TypeORM dùng `synchronize: true`.
+- Data access hiện được thể hiện qua custom repository classes.
+- Auth module tách DTO theo `dto/request` và `dto/response`.
+- Auth message trả client được gom trong `src/modules/auth/messages`.
 
-## Assumptions
+## Giả định
 
-- The intended architecture appears to be module-based NestJS with domain repositories first, but feature modules and service/controller layers are still Pending in the current source tree.
+- Kiến trúc mong muốn có vẻ là NestJS module-based, bắt đầu từ entities và repositories. Một số feature module/service/controller ngoài auth vẫn Đang chờ bổ sung.

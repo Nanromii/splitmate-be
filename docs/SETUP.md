@@ -1,22 +1,22 @@
-# Setup
+# Thiết lập
 
-## Prerequisites
+## Điều kiện tiên quyết
 
-- Node.js is required. Exact version is Pending because no `engines` field exists in `package.json`.
-- pnpm is required to run repository scripts.
-- PostgreSQL is required.
-- Redis is required by env validation, even though Redis integration is not implemented yet.
+- Cần Node.js. Phiên bản chính xác Đang chờ bổ sung vì `package.json` chưa có `engines`.
+- Cần pnpm để chạy repository scripts.
+- Cần PostgreSQL.
+- Cần Redis vì env validation đang yêu cầu, dù Redis integration vẫn Chưa triển khai.
 
-## Installation
+## Cài đặt
 
-- Install dependencies with pnpm before running any project scripts.
-- No repository-managed bootstrap script is defined in `package.json`.
+- Cài dependencies bằng pnpm trước khi chạy script của project.
+- Repo chưa có bootstrap script riêng trong `package.json`.
 
-## Environment setup
+## Thiết lập environment
 
-- Create `.env.development.local` from `env.example`.
-- The application loads `.env.${NODE_ENV || 'development'}.local`.
-- The current validation schema requires:
+- Tạo `.env.development.local` từ `env.example`.
+- App load `.env.${NODE_ENV || 'development'}.local`.
+- Validation schema hiện yêu cầu:
   - `NODE_ENV`
   - `PORT`
   - `DB_HOST`
@@ -32,42 +32,42 @@
   - `JWT_REFRESH_EXPIRES_IN`
   - `GOOGLE_CLIENT_ID`
 
-Important note:
+Ghi chú quan trọng:
 
-- `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` must be different strong secrets outside local development.
-- `GOOGLE_CLIENT_ID` must match the client id used by the frontend to obtain Google ID tokens.
+- `JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET` nên là hai secret mạnh khác nhau ngoài local development.
+- `GOOGLE_CLIENT_ID` phải khớp với client id mà frontend dùng để lấy Google ID token.
 
-## Database setup
+## Thiết lập database
 
-- Database type: PostgreSQL.
-- Config is defined in `src/configs/database.config.ts`.
-- The application currently relies on TypeORM `synchronize: true`.
-- There are no migrations or seeds in the current source tree.
-- Auth/session schema changes are applied through TypeORM `synchronize: true` in the current source.
+- Database type là PostgreSQL.
+- Config nằm trong `src/configs/database.config.ts`.
+- App hiện dựa vào TypeORM `synchronize: true`.
+- Source hiện chưa có migrations hoặc seeds.
+- Auth/session schema hiện được áp dụng bằng TypeORM `synchronize: true`.
 
-## Redis/Docker setup
+## Thiết lập Redis/Docker
 
-- `docker-compose.yml` defines:
-  - `postgres` using `postgres:16`
-  - `redis` using `redis:7-alpine`
-- Redis is only provisioned at infrastructure level right now. No Redis module or Redis service implementation was found in `src`.
+- `docker-compose.yml` định nghĩa:
+  - `postgres` dùng `postgres:16`
+  - `redis` dùng `redis:7-alpine`
+- Redis hiện chỉ được chuẩn bị ở tầng hạ tầng. Không tìm thấy Redis module/service implementation trong `src`.
 
-## Migration/seed commands
+## Lệnh migration/seed
 
-Not implemented yet.
+Chưa triển khai.
 
-## Run local
+## Chạy local
 
-- Use `pnpm start:dev` for local development.
-- Use `pnpm start` to start via Nest CLI without the development `NODE_ENV` wrapper.
+- Dùng `pnpm start:dev` cho local development.
+- Dùng `pnpm start` để chạy Nest CLI không kèm wrapper `NODE_ENV=development`.
 
-## Troubleshooting
+## Xử lý sự cố
 
-- If env variables are missing, startup fails during Joi validation.
-- `pnpm test` currently passes.
-- `pnpm test:e2e` currently passes with a focused auth routing spec that does not require PostgreSQL.
-- Because `synchronize: true` is enabled, schema changes can be applied automatically on startup against the connected database.
+- Nếu thiếu env variables, startup sẽ fail ở bước Joi validation.
+- `pnpm test` hiện pass.
+- `pnpm test:e2e` hiện pass với auth routing spec không cần PostgreSQL.
+- Vì `synchronize: true` đang bật, schema changes có thể được áp dụng tự động khi app startup với database đã kết nối.
 
-## Assumptions
+## Giả định
 
-- The provided `docker-compose.yml` is intended for local development because the repository does not include a Dockerfile or an application container definition.
+- `docker-compose.yml` có vẻ phục vụ local development vì repo chưa có Dockerfile hoặc application container definition.

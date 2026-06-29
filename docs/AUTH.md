@@ -1,45 +1,45 @@
 # Auth
 
-## Authentication method
+## Phương thức xác thực
 
-SplitMate currently supports Google login only. Username/password login, password reset, email verification endpoints, and additional OAuth providers are Not implemented yet.
+SplitMate hiện chỉ hỗ trợ Google login. Username/password login, password reset, email verification endpoints và OAuth provider khác đều Chưa triển khai.
 
-## Google login flow
+## Luồng Google login
 
-1. Client obtains a Google ID token for the configured `GOOGLE_CLIENT_ID`.
-2. Client calls `POST /api/v1/auth/google/login` with `idToken`.
-3. Backend verifies the Google token through Google's tokeninfo endpoint and checks:
-   - audience matches `GOOGLE_CLIENT_ID`
-   - token has a subject
-   - token has a verified email
-   - token is not expired
-4. Backend finds a user by Google provider account id or email.
-5. If the user does not exist, backend creates a Google user with `password_hash = NULL`.
-6. If the user exists, backend updates Google profile fields when appropriate.
-7. Backend creates a new session.
-8. Backend returns the user, access token, refresh token, session id, and access token lifetime.
+1. Client lấy Google ID token cho `GOOGLE_CLIENT_ID` đã cấu hình.
+2. Client gọi `POST /api/v1/auth/google/login` với `idToken`.
+3. Backend verify Google token qua Google tokeninfo endpoint và kiểm tra:
+   - audience khớp `GOOGLE_CLIENT_ID`
+   - token có subject
+   - token có email đã verify
+   - token chưa hết hạn
+4. Backend tìm user theo Google provider account id hoặc email.
+5. Nếu user chưa tồn tại, backend tạo Google user với `password_hash = NULL`.
+6. Nếu user đã tồn tại, backend cập nhật Google profile fields khi phù hợp.
+7. Backend tạo session mới.
+8. Backend trả về user, access token, refresh token, session id và thời hạn access token.
 
-## JWT and refresh token strategy
+## Chiến lược JWT và refresh token
 
 - Access token:
-  - JWT signed with `JWT_ACCESS_SECRET`
-  - short-lived, configured by `JWT_ACCESS_EXPIRES_IN`
-  - payload includes `sub`, `sessionId`, `email`, `role`, and `tokenVersion`
-  - raw access tokens are not stored
+  - JWT ký bằng `JWT_ACCESS_SECRET`
+  - ngắn hạn, cấu hình bởi `JWT_ACCESS_EXPIRES_IN`
+  - payload gồm `sub`, `sessionId`, `email`, `role` và `tokenVersion`
+  - không lưu raw access token
 - Refresh token:
-  - JWT signed with `JWT_REFRESH_SECRET`
-  - long-lived, configured by `JWT_REFRESH_EXPIRES_IN`
-  - payload includes the access payload fields plus `type: "refresh"`
-  - raw refresh tokens are not stored
-  - `sessions.refresh_token_hash` stores a bcrypt hash only
+  - JWT ký bằng `JWT_REFRESH_SECRET`
+  - dài hạn, cấu hình bởi `JWT_REFRESH_EXPIRES_IN`
+  - payload gồm các field của access payload và `type: "refresh"`
+  - không lưu raw refresh token
+  - `sessions.refresh_token_hash` chỉ lưu bcrypt hash
 
-Refresh token rotation is implemented. Every successful refresh issues a new refresh token and replaces the stored hash. Reusing an older refresh token causes the active session to be revoked with `reuse_detected`.
+Refresh token rotation đã triển khai. Mỗi lần refresh thành công sẽ phát refresh token mới và thay hash đang lưu. Dùng lại refresh token cũ sẽ revoke session active với `reuse_detected`.
 
-## Session management
+## Quản lý session
 
-Each login creates one row in `sessions`. A user can have multiple sessions.
+Mỗi lần login tạo một row trong `sessions`. Một user có thể có nhiều session.
 
-Session fields used by auth include:
+Các field session auth đang dùng:
 
 - `id`
 - `user_id`
@@ -54,15 +54,15 @@ Session fields used by auth include:
 - `expires_at`
 - `revoked_at`
 - `revoke_reason`
-- audit fields from the shared local base entity
+- audit fields từ local base entity
 
-`last_activity_at` is returned to clients as `lastUsedAt`.
+`last_activity_at` được trả cho client dưới tên `lastUsedAt`.
 
-## Guards and public routes
+## Guard và public routes
 
-Protected auth endpoints use `JwtAuthGuard`. The guard verifies the access token, checks that the user exists and is active, and checks that the token session is active and not expired or revoked.
+Protected auth endpoints dùng `JwtAuthGuard`. Guard verify access token, kiểm tra user tồn tại và active, đồng thời kiểm tra session trong token còn active, chưa expired và chưa revoked.
 
-Public endpoints use `@Public()`:
+Public endpoints dùng `@Public()`:
 
 - `POST /auth/google/login`
 - `POST /auth/refresh`
@@ -77,22 +77,30 @@ Public endpoints use `@Public()`:
 - `DELETE /api/v1/auth/sessions/:sessionId`
 - `GET /api/v1/auth/me`
 
-Protected endpoints require:
+Protected endpoints yêu cầu:
 
 ```http
 Authorization: Bearer <accessToken>
 ```
 
-## User status rules
+## Request/response DTO
 
-Only users with `status = active` can authenticate or call protected endpoints. Google login activates a new Google user and activates an existing `pending_verification` user after Google verifies the email. `inactive` and `suspended` users are rejected.
+- Request DTO nằm trong `src/modules/auth/dto/request`.
+- Response DTO nằm trong `src/modules/auth/dto/response`.
+- Response không trả `refreshTokenHash`, `passwordHash`, `deletedAt` hoặc token secret.
+- Entity không được dùng trực tiếp làm response.
 
-## Security notes
+## Quy tắc trạng thái user
 
-- No username/password login is implemented.
-- Password hashes are not returned.
-- Google users are created with `password_hash = NULL`.
-- Refresh token hashes are never returned.
-- Raw refresh tokens are never stored.
-- Old refresh tokens cannot be reused after rotation.
-- Access and refresh token secrets are separate env variables.
+Chỉ user có `status = active` được authenticate hoặc gọi protected endpoints. Google login sẽ activate Google user mới và activate user đang `pending_verification` sau khi Google xác nhận email. User `inactive` hoặc `suspended` bị từ chối.
+
+## Ghi chú bảo mật
+
+- Không triển khai username/password login.
+- Không trả password hash.
+- Google user được tạo với `password_hash = NULL`.
+- Không trả refresh token hash.
+- Không lưu raw refresh token.
+- Refresh token cũ không dùng lại được sau rotation.
+- Access token secret và refresh token secret là hai env riêng.
+- Message lỗi auth trả client nằm trong `src/modules/auth/messages/ERROR.ts`.

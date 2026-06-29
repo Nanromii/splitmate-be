@@ -1,58 +1,58 @@
-# Testing
+# Kiểm thử
 
-## Test tools
+## Công cụ test
 
 - Jest
 - `@nestjs/testing`
 - `ts-jest`
 - Supertest
 
-## Unit test command
+## Lệnh unit test
 
 - `pnpm test`
 - `pnpm test:watch`
 - `pnpm test:cov`
 - `pnpm test:debug`
 
-## E2E test command
+## Lệnh e2e test
 
 - `pnpm test:e2e`
 
-## Test file naming
+## Quy ước tên test file
 
 - Unit tests: `*.spec.ts`
 - E2E tests: `*.e2e-spec.ts`
 
-## Mocking strategy
+## Chiến lược mock
 
-- Current unit test setup uses Nest `TestingModule`.
-- `src/app.controller.spec.ts` uses the real `AppService`.
-- Auth tests mock repositories, JWT signing/verification, ConfigService, Google token verification, and the ESM-only `uuid` dependency.
+- Unit test hiện dùng Nest `TestingModule`.
+- `src/app.controller.spec.ts` dùng real `AppService`.
+- Auth tests mock repositories, JWT signing/verification, `ConfigService`, Google token verification và ESM-only `uuid` dependency.
 
-## What should be tested
+## Nên test gì
 
-- Bootstrap and configuration behavior
-- Entity mapping and repository behavior
-- Future controller, service, auth, and validation flows once implemented
-- Env validation behavior for each runtime mode
+- Bootstrap và configuration behavior
+- Entity mapping và repository behavior
+- Controller, service, auth và validation flows khi các phần tương ứng được triển khai
+- Hành vi của env validation cho từng runtime mode
 
-## Current status
+## Trạng thái hiện tại
 
-- `pnpm build`: passes.
-- `pnpm test`: passes.
-- `pnpm test:e2e`: passes with a focused auth routing spec.
+- `pnpm build`: pass.
+- `pnpm test`: pass.
+- `pnpm test:e2e`: pass với auth routing spec tập trung.
 
-## Current auth coverage
+## Auth coverage hiện tại
 
-- Google login creates a user, session, and token pair.
-- Refresh token success rotates the stored refresh token hash.
-- Reusing an old refresh token revokes the session.
-- Logout revokes the current session.
-- Logout all revokes active sessions for the current user.
-- Revoke session blocks sessions outside the current user scope.
-- Invalid access tokens are rejected.
-- E2E verifies `POST /api/v1/auth/refresh` routing and `GET /api/v1/auth/me` bearer-token enforcement.
+- Google login tạo user, session và token pair.
+- Refresh token thành công sẽ rotate stored refresh token hash.
+- Dùng lại refresh token cũ sẽ revoke session.
+- Logout revoke session hiện tại.
+- Logout all revoke active sessions của user hiện tại.
+- Revoke session chặn session không thuộc user hiện tại.
+- Invalid access token bị từ chối.
+- E2E verify routing `POST /api/v1/auth/refresh` và bearer-token enforcement của `GET /api/v1/auth/me`.
 
-## Assumptions
+## Giả định
 
-- The existing tests still look like starter-template tests and have not been updated to match the current source structure.
+- Test hiện đã được cập nhật khỏi hành vi của starter template cho các phần auth liên quan. Các domain module ngoài auth vẫn cần bổ sung test khi được triển khai.

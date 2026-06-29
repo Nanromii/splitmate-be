@@ -1,56 +1,64 @@
-# Error Handling
+# Xử lý lỗi
 
-## Error response format
+## Định dạng error response
 
-Pending.
+Đang chờ bổ sung.
 
-- No custom exception filter or global error formatter was found in `src`.
-- Current runtime behavior should follow NestJS default exception responses.
+- Chưa có custom exception filter hoặc global error formatter trong `src`.
+- Runtime hiện dùng default NestJS exception response.
 
-## Validation error format
+## Định dạng validation error
 
-- Global validation is enabled through `ValidationPipe` in `src/main.ts`.
-- Configured options:
+- Global validation được bật qua `ValidationPipe` trong `src/main.ts`.
+- Options hiện dùng:
   - `whitelist: true`
   - `transform: true`
   - `forbidNonWhitelisted: true`
-- No request DTOs are currently implemented, so request validation behavior is mostly Pending at feature level.
+- Auth request DTO đã dùng `class-validator`.
+- Request DTO cho domain khác Đang chờ bổ sung.
 
 ## Exception filter
 
-Not implemented yet.
+Chưa triển khai.
 
-## Business error convention
+## Quy ước business error
 
-Partially implemented for auth through NestJS built-in exceptions. No custom error-code envelope exists yet.
+Triển khai một phần cho auth bằng NestJS built-in exceptions. Chưa có custom error-code envelope.
 
-## Common error codes if available
+## Quy ước message
 
-Pending.
+- Message auth trả client phải là tiếng Việt.
+- Message lỗi auth nằm trong `src/modules/auth/messages/ERROR.ts`.
+- Message thông tin/thành công auth nằm trong `src/modules/auth/messages/INFO.ts`.
+- Service/controller/guard không hardcode message trả client.
 
-Observed source behavior:
+## Error code dùng chung nếu có
 
-- Startup can fail with Joi config validation errors when required env vars are missing.
-- No domain-specific error code enum or shared exception helper was found.
+Đang chờ bổ sung.
 
-## Auth error cases
+Quan sát từ source:
 
-Auth currently returns NestJS default exception responses for these cases:
+- Startup có thể fail với Joi config validation error khi thiếu env vars.
+- Chưa có domain-specific error code enum hoặc shared exception helper.
 
-- Google token invalid or expired: `401 Unauthorized`
-- Google email not verified: `401 Unauthorized`
-- User inactive or suspended: `401 Unauthorized`
-- Missing or malformed bearer token: `401 Unauthorized`
-- Invalid access token: `401 Unauthorized`
+## Các trường hợp lỗi auth
+
+Auth hiện trả NestJS default exception response cho các case:
+
+- Google token invalid hoặc expired: `401 Unauthorized`
+- Google email chưa verify: `401 Unauthorized`
+- User inactive hoặc suspended: `401 Unauthorized`
+- Thiếu hoặc sai bearer token: `401 Unauthorized`
+- Access token invalid: `401 Unauthorized`
 - Refresh token invalid: `401 Unauthorized`
 - Refresh token expired: `401 Unauthorized`
-- Session not found during token validation: `401 Unauthorized`
+- Session not found khi token validation: `401 Unauthorized`
 - Session revoked: `401 Unauthorized`
 - Session expired: `401 Unauthorized`
-- Reused old refresh token: `401 Unauthorized`; the session is revoked with `reuse_detected`
-- Revoke session not owned by current user: `404 Not Found`
-- Invalid `sessionId` path parameter: `400 Bad Request`
+- Dùng lại refresh token cũ: `401 Unauthorized`; session bị revoke với `reuse_detected`
+- Revoke session không thuộc user hiện tại: `404 Not Found`
+- `sessionId` path parameter không hợp lệ: `400 Bad Request`
 
-## Assumptions
+## Giả định
 
-- Validation and exception payload shapes are assumed to be NestJS defaults because the current source does not override them.
+- Validation và exception payload shape theo default NestJS vì source hiện chưa override.

@@ -1,10 +1,10 @@
 # SplitMate Backend
 
-## Project overview
+## Tổng quan dự án
 
-SplitMate is a NestJS backend project for an expense-sharing domain. The current source code contains application bootstrap, environment and database configuration, domain entities, custom repositories, and Google-only authentication with JWT access/refresh tokens and session management. Other business modules such as groups, expenses, settlements, interceptors, and middleware are still not implemented yet in `src`.
+SplitMate là NestJS backend cho domain chia sẻ chi phí. Source hiện có bootstrap, environment/database configuration, domain entities, custom repositories và Google-only authentication với JWT access/refresh tokens và session management. Các business module như groups, expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
 
-## Tech stack
+## Công nghệ
 
 - NestJS 11
 - TypeScript 5
@@ -12,26 +12,26 @@ SplitMate is a NestJS backend project for an expense-sharing domain. The current
 - PostgreSQL
 - Redis
 - Swagger
-- Joi for env validation
+- Joi cho env validation
 - Jest + Supertest
 - ESLint + Prettier
 
-## Requirements
+## Yêu cầu môi trường
 
-- Node.js is required. Exact version is Pending because no `engines` field is defined in `package.json`.
-- pnpm is required to run the project scripts.
-- PostgreSQL and Redis are required by the current env validation schema.
+- Cần Node.js. Phiên bản chính xác Đang chờ bổ sung vì `package.json` chưa có `engines`.
+- Cần pnpm để chạy scripts của repo.
+- Cần PostgreSQL và Redis vì env validation hiện yêu cầu cả hai.
 
-## Quick start
+## Khởi chạy nhanh
 
-1. Install dependencies with pnpm.
-2. Create `.env.development.local` from `env.example`.
-3. Start PostgreSQL and Redis using the repository `docker-compose.yml`.
-4. Run the development server with `pnpm start:dev`.
+1. Cài dependencies bằng pnpm.
+2. Tạo `.env.development.local` từ `env.example`.
+3. Chạy PostgreSQL và Redis bằng `docker-compose.yml` của repo.
+4. Chạy development server bằng `pnpm start:dev`.
 
-## Environment variables
+## Biến môi trường
 
-Validated by `src/configs/env-validation.config.ts`:
+Được validate bởi `src/configs/env-validation.config.ts`:
 
 - `NODE_ENV`
 - `PORT`
@@ -48,47 +48,50 @@ Validated by `src/configs/env-validation.config.ts`:
 - `JWT_REFRESH_EXPIRES_IN`
 - `GOOGLE_CLIENT_ID`
 
-Important note:
+Ghi chú quan trọng:
 
-- Auth uses separate access and refresh token secrets. `JWT_SECRET` is no longer validated by the current source.
+- Auth dùng secret riêng cho access token và refresh token. `JWT_SECRET` không còn được validate trong source hiện tại.
+- `GOOGLE_CLIENT_ID` phải khớp với Google client mà frontend dùng để lấy Google ID token.
 
-## Available scripts
+## Scripts
 
-- `pnpm build`: Build the NestJS app into `dist/`.
-- `pnpm format`: Run Prettier on `src/**/*.ts` and `test/**/*.ts`.
-- `pnpm start`: Start the app with Nest CLI.
-- `pnpm start:dev`: Start the app in watch mode with `NODE_ENV=development`.
-- `pnpm start:prod`: Run the compiled app with `NODE_ENV=production`.
-- `pnpm start:debug`: Start the app in debug watch mode.
-- `pnpm lint`: Run ESLint with `--fix`.
-- `pnpm test`: Run unit tests.
-- `pnpm test:watch`: Run unit tests in watch mode.
-- `pnpm test:cov`: Run tests with coverage.
-- `pnpm test:debug`: Run Jest in debug mode.
-- `pnpm test:e2e`: Run end-to-end tests.
+- `pnpm build`: build NestJS app vào `dist/`.
+- `pnpm format`: chạy Prettier cho `src/**/*.ts` và `test/**/*.ts`.
+- `pnpm start`: chạy app bằng Nest CLI.
+- `pnpm start:dev`: chạy app watch mode với `NODE_ENV=development`.
+- `pnpm start:prod`: chạy compiled app với `NODE_ENV=production`.
+- `pnpm start:debug`: chạy debug watch mode.
+- `pnpm lint`: chạy ESLint với `--fix`.
+- `pnpm test`: chạy unit tests.
+- `pnpm test:watch`: chạy unit tests watch mode.
+- `pnpm test:cov`: chạy test coverage.
+- `pnpm test:debug`: chạy Jest debug.
+- `pnpm test:e2e`: chạy end-to-end tests.
 
-## Swagger/API docs
+## Tài liệu Swagger/API
 
 - Global API prefix: `/api/v1`
 - Swagger UI path: `/api/docs`
 - Swagger title: `SplitMate API`
 - Swagger description: `SplitMate Backend API`
-- Swagger bearer auth is registered globally.
+- Swagger bearer auth được đăng ký trong `src/main.ts`.
 
-Current status:
+Trạng thái hiện tại:
 
-- Swagger is configured in `src/main.ts`.
-- Auth endpoints are implemented under `/api/v1/auth`.
-- Other domain endpoints are Pending.
+- Swagger đã được cấu hình trong `src/main.ts`.
+- Auth endpoints đã triển khai dưới `/api/v1/auth`.
+- Các domain endpoint khác Đang chờ bổ sung.
 
-## Project structure
+## Cấu trúc dự án
 
 ```text
 splitmate/
 ├─ src/
 │  ├─ common/
+│  │  ├─ decorators/
 │  │  ├─ enums/
-│  │  └─ messages/            # empty
+│  │  ├─ messages/            # trống
+│  │  └─ types/
 │  ├─ configs/
 │  ├─ database/
 │  ├─ modules/
@@ -96,7 +99,7 @@ splitmate/
 │  │  ├─ repositories/
 │  │  ├─ sessions/
 │  │  └─ users/
-│  ├─ redis/                  # empty
+│  ├─ redis/                  # trống
 │  ├─ app.controller.ts
 │  ├─ app.module.ts
 │  ├─ app.service.ts
@@ -108,14 +111,14 @@ splitmate/
 └─ docs/
 ```
 
-## Useful links or notes
+## Ghi chú hữu ích
 
-- Detailed project docs live under `docs/`.
-- `docker-compose.yml` defines PostgreSQL and Redis for local development.
-- `pnpm build` currently passes.
-- `pnpm test` currently passes.
-- `pnpm test:e2e` currently passes with a focused auth routing spec.
+- Tài liệu chi tiết nằm trong `docs/`.
+- `docker-compose.yml` định nghĩa PostgreSQL và Redis cho local development.
+- `pnpm build` hiện pass.
+- `pnpm test` hiện pass.
+- `pnpm test:e2e` hiện pass với auth routing spec tập trung.
 
-## Assumptions
+## Giả định
 
-- Dependency installation is expected to be done with pnpm because the repository contains `pnpm-lock.yaml`, but `package.json` does not declare a `packageManager` field.
+- Repo có `pnpm-lock.yaml`, nên dependency installation nên dùng pnpm. `package.json` hiện chưa khai báo `packageManager`.

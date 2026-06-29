@@ -1,14 +1,14 @@
 # Database
 
-## Database technology
+## Công nghệ database
 
 - PostgreSQL
 - TypeORM
-- Connection config is in `src/configs/database.config.ts`
+- Connection config nằm trong `src/configs/database.config.ts`
 - `autoLoadEntities: true`
 - `synchronize: true`
 
-## Main entities/tables
+## Entities/tables chính
 
 - `users`
 - `groups`
@@ -23,53 +23,53 @@
 - `sessions`
 - `email_verifications`
 
-## Relationships
+## Quan hệ
 
-- `Group.owner -> User` with `onDelete: SET NULL`
+- `Group.owner -> User` với `onDelete: SET NULL`
 - `Group.members -> GroupMember`
 - `Group.expenses -> Expense`
 - `Group.settlements -> Settlement`
-- `GroupMember.group -> Group` with `onDelete: CASCADE`
-- `GroupMember.user -> User` with `onDelete: CASCADE`
-- `Expense.group -> Group` with `onDelete: CASCADE`
-- `Expense.paidBy -> User` with `onDelete: SET NULL`
+- `GroupMember.group -> Group` với `onDelete: CASCADE`
+- `GroupMember.user -> User` với `onDelete: CASCADE`
+- `Expense.group -> Group` với `onDelete: CASCADE`
+- `Expense.paidBy -> User` với `onDelete: SET NULL`
 - `Expense.splits -> ExpenseSplit`
-- `ExpenseSplit.expense -> Expense` with `onDelete: CASCADE`
-- `ExpenseSplit.user -> User` with `onDelete: CASCADE`
-- `Settlement.group -> Group` with `onDelete: CASCADE`
-- `Settlement.fromUser -> User` with `onDelete: SET NULL`
-- `Settlement.toUser -> User` with `onDelete: SET NULL`
-- `DeviceToken.user -> User` with `onDelete: CASCADE`
-- `Notification.user -> User` with `onDelete: CASCADE`
-- `Session.user -> User` with `onDelete: CASCADE`
-- `EmailVerification.user -> User` with `onDelete: CASCADE`
+- `ExpenseSplit.expense -> Expense` với `onDelete: CASCADE`
+- `ExpenseSplit.user -> User` với `onDelete: CASCADE`
+- `Settlement.group -> Group` với `onDelete: CASCADE`
+- `Settlement.fromUser -> User` với `onDelete: SET NULL`
+- `Settlement.toUser -> User` với `onDelete: SET NULL`
+- `DeviceToken.user -> User` với `onDelete: CASCADE`
+- `Notification.user -> User` với `onDelete: CASCADE`
+- `Session.user -> User` với `onDelete: CASCADE`
+- `EmailVerification.user -> User` với `onDelete: CASCADE`
 
 ## Soft delete
 
-Partially implemented.
+Triển khai một phần.
 
-- `src/database/base.entity.ts` defines `deleted_at`.
-- `Group`, `User`, and `Session` extend the local `src/database/base.entity.ts`.
-- Several other entities currently import `BaseEntity` from `typeorm` instead of the local base entity, so soft delete is not consistently defined across the current source.
+- `src/database/base.entity.ts` định nghĩa `deleted_at`.
+- `Group`, `User` và `Session` extend local `src/database/base.entity.ts`.
+- Một số entity khác hiện import `BaseEntity` từ `typeorm`, nên soft delete chưa nhất quán trên toàn source.
 
 ## Audit columns
 
-Partially implemented.
+Triển khai một phần.
 
-- `src/database/base.entity.ts` defines `id`, `created_at`, `updated_at`, `deleted_at`, `created_by`, and `updated_by`.
-- `src/database/base.entity.ts` also defines `deleted_by` and `version`.
-- `AuditLog` defines its own `id` and `created_at`.
-- Because of the mixed `BaseEntity` imports, shared audit columns are not consistently applied across all current entities.
+- `src/database/base.entity.ts` định nghĩa `id`, `created_at`, `updated_at`, `deleted_at`, `created_by`, `updated_by`, `deleted_by` và `version`.
+- `AuditLog` tự định nghĩa `id` và `created_at`.
+- Do mixed `BaseEntity` imports, shared audit columns chưa áp dụng nhất quán cho mọi entity.
 
-## Cascade behavior
+## Hành vi cascade
 
-- Delete a `Group`: related `GroupMember`, `Expense`, and `Settlement` rows cascade.
-- Delete an `Expense`: related `ExpenseSplit` rows cascade.
-- Delete a `User`: related `GroupMember`, `ExpenseSplit`, `DeviceToken`, `Notification`, `Session`, and `EmailVerification` rows cascade; `Group.owner`, `Expense.paidBy`, `Settlement.fromUser`, and `Settlement.toUser` are set to `NULL`.
+- Xóa `Group`: các row `GroupMember`, `Expense` và `Settlement` liên quan cascade.
+- Xóa `Expense`: các row `ExpenseSplit` liên quan cascade.
+- Xóa `User`: các row `GroupMember`, `ExpenseSplit`, `DeviceToken`, `Notification`, `Session` và `EmailVerification` liên quan cascade; `Group.owner`, `Expense.paidBy`, `Settlement.fromUser` và `Settlement.toUser` được set `NULL`.
 
 ## Index/unique constraints
 
 - `users.email`: unique index `uq_users_email`
+- `users(provider, provider_account_id)`: unique index `uq_users_provider_account`
 - `group_members(group_id, user_id)`: unique index `uq_group_members_group_user`
 - `expense_splits(expense_id, user_id)`: unique index `uq_expense_splits_expense_user`
 - `device_tokens(user_id, token)`: unique index `uq_device_tokens_user_token`
@@ -78,23 +78,22 @@ Partially implemented.
 - `sessions.status`: index `idx_sessions_status`
 - `sessions.expires_at`: index `idx_sessions_expires_at`
 - `sessions.last_activity_at`: index `idx_sessions_last_activity_at`
-- `users(provider, provider_account_id)`: unique index `uq_users_provider_account`
-- Additional single-column indexes exist on foreign-key style columns such as `group_id`, `user_id`, `owner_id`, `paid_by`, `from_user_id`, `to_user_id`, `entity_id`, and `uploaded_by`
+- Một số index đơn khác nằm trên các column kiểu foreign key như `group_id`, `user_id`, `owner_id`, `paid_by`, `from_user_id`, `to_user_id`, `entity_id` và `uploaded_by`.
 
-## Auth/session columns
+## Columns cho auth/session
 
-`sessions.refresh_token_hash` is marked `select: false` and stores only a bcrypt hash. Raw refresh tokens are not stored. `sessions.last_activity_at` is updated after successful refresh and is exposed by auth responses as `lastUsedAt`.
+`sessions.refresh_token_hash` có `select: false` và chỉ lưu bcrypt hash. Raw refresh token không được lưu. `sessions.last_activity_at` được cập nhật sau refresh thành công và trả ra response dưới tên `lastUsedAt`.
 
-`users.password_hash` is nullable because the implemented auth flow is Google-only. Google users are linked by `provider = google` and `provider_account_id`.
+`users.password_hash` nullable vì auth hiện chỉ hỗ trợ Google login. Google user được liên kết bằng `provider = google` và `provider_account_id`.
 
-## Migration rules
+## Quy tắc migration
 
-Not implemented yet.
+Chưa triển khai.
 
-- No migration files were found.
-- No seed files were found.
-- No migration or seed scripts are defined in `package.json`.
+- Không tìm thấy migration files.
+- Không tìm thấy seed files.
+- `package.json` chưa có migration hoặc seed scripts.
 
-## Assumptions
+## Giả định
 
-- The current entity source appears to intend a shared local base entity, but the mixed imports should be verified before relying on uniform primary keys or audit columns across all tables.
+- Source hiện có vẻ muốn dùng local shared base entity, nhưng mixed imports cần được verify trước khi dựa vào primary key hoặc audit columns đồng nhất trên toàn bộ tables.

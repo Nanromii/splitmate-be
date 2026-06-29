@@ -1,51 +1,51 @@
-# Deployment
+# Triển khai
 
-## Build command
+## Lệnh build
 
 - `pnpm build`
 
 ## Production env
 
-- The production start script is `pnpm start:prod`.
-- `src/app.module.ts` loads `.env.production.local` when `NODE_ENV=production`.
-- Required env vars are validated by Joi at startup.
+- Script start production là `pnpm start:prod`.
+- `src/app.module.ts` load `.env.production.local` khi `NODE_ENV=production`.
+- Các env vars bắt buộc được validate bằng Joi khi startup.
 
-Important note:
+Ghi chú quan trọng:
 
-- The current validation schema expects split JWT secrets: `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`.
-- `GOOGLE_CLIENT_ID` must be configured for the frontend Google client used in production.
+- Validation schema hiện yêu cầu split JWT secrets: `JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET`.
+- `GOOGLE_CLIENT_ID` phải được cấu hình cho frontend Google client dùng ở production.
 
-## Docker/deployment notes
+## Ghi chú Docker/deployment
 
-- The repository includes `docker-compose.yml` for PostgreSQL and Redis only.
-- No Dockerfile was found for the application itself.
-- No deployment manifests or CI/CD deployment config were found in the current source tree.
+- Repo có `docker-compose.yml` cho PostgreSQL và Redis.
+- Không tìm thấy Dockerfile cho app.
+- Không tìm thấy deployment manifests hoặc CI/CD deployment config trong source hiện tại.
 
-## Migration before deployment
+## Migration trước deployment
 
-Pending.
+Đang chờ bổ sung.
 
-- No migration command exists in `package.json`.
-- No migration files were found.
-- The current code relies on TypeORM `synchronize: true`.
+- `package.json` chưa có migration command.
+- Không tìm thấy migration files.
+- Code hiện dựa vào TypeORM `synchronize: true`.
 
 ## Health check
 
-Not implemented yet.
+Chưa triển khai.
 
-- No health controller or dedicated health endpoint was found.
+- Không tìm thấy health controller hoặc health endpoint riêng.
 
-## Release checklist
+## Checklist release
 
-- Run `pnpm build`.
-- Run `pnpm test`.
-- Run `pnpm test:e2e`.
-- Verify production env variables match the current validation schema.
-- Verify `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are different strong secrets.
-- Verify `GOOGLE_CLIENT_ID` matches the deployed frontend Google client.
-- Verify PostgreSQL and Redis are reachable from the target environment.
-- Review the impact of `synchronize: true` before production startup.
+- Chạy `pnpm build`.
+- Chạy `pnpm test`.
+- Chạy `pnpm test:e2e`.
+- Kiểm tra production env variables khớp validation schema hiện tại.
+- Kiểm tra `JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET` là hai secret mạnh khác nhau.
+- Kiểm tra `GOOGLE_CLIENT_ID` khớp deployed frontend Google client.
+- Kiểm tra PostgreSQL và Redis có thể truy cập từ target environment.
+- Review ảnh hưởng của `synchronize: true` trước production startup.
 
-## Assumptions
+## Giả định
 
-- The deployment target is Pending because no platform-specific deployment configuration exists in the repository.
+- Deployment target Đang chờ bổ sung vì repo chưa có deployment configuration theo platform cụ thể.

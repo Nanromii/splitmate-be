@@ -1,18 +1,18 @@
-# API Convention
+# Quy ước API
 
 ## Base URL
 
-- Local base URL pattern: `http://localhost:{PORT}/api/v1`
-- Global prefix is configured with `app.setGlobalPrefix('api/v1')`
+- Local base URL: `http://localhost:{PORT}/api/v1`
+- Global prefix được cấu hình bằng `app.setGlobalPrefix('api/v1')`
 
-## API versioning
+## Phiên bản API
 
-- Versioning is path-based through the global prefix.
-- No additional Nest versioning strategy is configured.
+- Versioning hiện dùng path-based thông qua global prefix.
+- Chưa cấu hình thêm Nest versioning strategy.
 
-## Endpoint naming
+## Quy ước đặt tên endpoint
 
-Auth endpoints are implemented under `/auth`:
+Auth endpoints đã triển khai dưới `/auth`:
 
 - `POST /auth/google/login`
 - `POST /auth/refresh`
@@ -22,20 +22,27 @@ Auth endpoints are implemented under `/auth`:
 - `DELETE /auth/sessions/:sessionId`
 - `GET /auth/me`
 
-Other business endpoint naming is Pending.
+Naming cho business endpoint khác Đang chờ bổ sung.
 
-## Request DTO convention
+## Quy ước request DTO
 
-Implemented for auth DTOs with `class-validator`.
+- Request DTO nhận input từ client nằm trong `dto/request`.
+- Auth request DTO hiện dùng `class-validator`.
+- Global validation dùng `whitelist`, `transform` và `forbidNonWhitelisted`.
 
-Global validation still uses `whitelist`, `transform`, and `forbidNonWhitelisted`.
+## Quy ước response DTO
 
-## Response format
+- Response DTO trả client nằm trong `dto/response`.
+- Không dùng entity trực tiếp làm response.
+- Không expose field nhạy cảm như `refreshTokenHash`, `passwordHash`, `deletedAt` hoặc token secret.
+- Auth dùng mapper nhỏ trong `src/modules/auth/auth.mapper.ts` để map entity sang response DTO.
 
-- No global response wrapper or response interceptor is implemented.
-- Current behavior should follow the default NestJS controller return shape.
+## Định dạng response
 
-Auth token responses return:
+- Chưa có global response wrapper hoặc response interceptor.
+- Runtime hiện theo default NestJS controller return shape.
+
+Auth token response trả:
 
 - `user`
 - `accessToken`
@@ -43,30 +50,32 @@ Auth token responses return:
 - `sessionId`
 - `expiresIn`
 
-Session list responses do not include `refreshTokenHash`.
+Session list response không trả `refreshTokenHash`.
 
-## Authentication header
+## Header xác thực
 
-Protected endpoints require:
+Protected endpoints yêu cầu:
 
 ```http
 Authorization: Bearer <accessToken>
 ```
 
-## Pagination format
+## Định dạng phân trang
 
-Not implemented yet.
+Chưa triển khai.
 
-## Swagger convention
+## Quy ước Swagger
 
-- Swagger is created in `src/main.ts`.
+- Swagger được tạo trong `src/main.ts`.
 - UI path: `/api/docs`
 - Title: `SplitMate API`
 - Description: `SplitMate Backend API`
 - Version: `1.0`
-- Bearer auth is registered globally.
-- Auth controller methods use Swagger decorators and protected methods use bearer auth metadata.
+- Bearer auth được đăng ký toàn cục.
+- Auth controller methods dùng Swagger decorators.
+- Protected methods dùng bearer auth metadata.
+- Text mô tả Swagger trong auth ưu tiên tiếng Việt.
 
-## Assumptions
+## Giả định
 
-- Because there are no implemented route handlers yet, naming and payload conventions beyond the global prefix should be treated as Pending.
+- Vì ngoài auth chưa có business route handler, naming và payload convention cho domain khác vẫn Đang chờ bổ sung.
