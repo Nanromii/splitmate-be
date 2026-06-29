@@ -27,7 +27,7 @@
 
 - Current unit test setup uses Nest `TestingModule`.
 - `src/app.controller.spec.ts` uses the real `AppService`.
-- No dedicated mocking utilities, factories, or fixtures were found.
+- Auth tests mock repositories, JWT signing/verification, ConfigService, Google token verification, and the ESM-only `uuid` dependency.
 
 ## What should be tested
 
@@ -38,9 +38,20 @@
 
 ## Current status
 
-- `pnpm build`: passed during this documentation update.
-- `pnpm test`: currently fails because `src/app.controller.spec.ts` expects `AppController.getHello()`, but the method is missing from `src/app.controller.ts`.
-- `pnpm test:e2e`: currently fails during app bootstrap with config validation errors in the current setup.
+- `pnpm build`: passes.
+- `pnpm test`: passes.
+- `pnpm test:e2e`: passes with a focused auth routing spec.
+
+## Current auth coverage
+
+- Google login creates a user, session, and token pair.
+- Refresh token success rotates the stored refresh token hash.
+- Reusing an old refresh token revokes the session.
+- Logout revokes the current session.
+- Logout all revokes active sessions for the current user.
+- Revoke session blocks sessions outside the current user scope.
+- Invalid access tokens are rejected.
+- E2E verifies `POST /api/v1/auth/refresh` routing and `GET /api/v1/auth/me` bearer-token enforcement.
 
 ## Assumptions
 

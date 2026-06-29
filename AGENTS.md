@@ -4,8 +4,9 @@
 
 - This repository is a NestJS backend for the SplitMate domain.
 - The current source is still at an early scaffold stage.
-- The implemented parts are bootstrap code, config, enums, entities, and custom repositories.
-- Business modules such as auth, users, groups, expenses, settlements, DTOs, guards, interceptors, middleware, and message catalogs are Not implemented yet.
+- The implemented parts are bootstrap code, config, enums, entities, custom repositories, and Google-only auth with JWT/session management.
+- Business modules such as groups, expenses, settlements, interceptors, middleware, and message catalogs are Not implemented yet.
+- Users and sessions modules currently exist mostly as scaffolds; auth owns the implemented user/session workflow.
 - `src/common/messages` and `src/redis` currently exist but are empty.
 
 ## Rules for AI coding agents
@@ -15,6 +16,8 @@
 - Do not claim an endpoint, auth flow, validation rule, or repository exists unless it is present in `src`.
 - If a feature is missing from code, document it as `Not implemented yet` or `Pending`.
 - Keep docs and code aligned with the current implementation, even if the implementation is incomplete.
+- Preserve Google-only authentication unless the user explicitly asks for another login method.
+- Do not add username/password login, password reset, or email verification endpoints unless explicitly requested.
 - Preserve entity table names, enum values, and relation settings unless the user explicitly asks to change them.
 - Call out real inconsistencies in the codebase instead of silently normalizing them.
 
@@ -34,6 +37,7 @@
 - `src/common/messages`: Pending.
 - `src/database`: entity definitions and the local shared base entity.
 - `src/modules/repositories`: custom repository classes and the repository module.
+- `src/modules/auth`: Google login, JWT tokens, session management, auth guard, DTOs, and Google token verification.
 - `src/redis`: Pending.
 - `test`: e2e tests and Jest e2e config.
 

@@ -26,13 +26,16 @@
   - `DB_DATABASE`
   - `REDIS_HOST`
   - `REDIS_PORT`
-  - `JWT_SECRET`
+  - `JWT_ACCESS_SECRET`
+  - `JWT_ACCESS_EXPIRES_IN`
+  - `JWT_REFRESH_SECRET`
+  - `JWT_REFRESH_EXPIRES_IN`
+  - `GOOGLE_CLIENT_ID`
 
 Important note:
 
-- `env.example` defines `JWT_SECRET`.
-- `.env.development.local` and `.env.production.local` define `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` instead.
-- This mismatch is present in the current source and should be resolved before implementing auth.
+- `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` must be different strong secrets outside local development.
+- `GOOGLE_CLIENT_ID` must match the client id used by the frontend to obtain Google ID tokens.
 
 ## Database setup
 
@@ -40,6 +43,7 @@ Important note:
 - Config is defined in `src/configs/database.config.ts`.
 - The application currently relies on TypeORM `synchronize: true`.
 - There are no migrations or seeds in the current source tree.
+- Auth/session schema changes are applied through TypeORM `synchronize: true` in the current source.
 
 ## Redis/Docker setup
 
@@ -60,8 +64,8 @@ Not implemented yet.
 ## Troubleshooting
 
 - If env variables are missing, startup fails during Joi validation.
-- `pnpm test:e2e` currently fails during app bootstrap because the current test setup does not satisfy config validation.
-- `pnpm test` currently fails because `src/app.controller.spec.ts` expects `AppController.getHello()`, but `src/app.controller.ts` does not implement that method.
+- `pnpm test` currently passes.
+- `pnpm test:e2e` currently passes with a focused auth routing spec that does not require PostgreSQL.
 - Because `synchronize: true` is enabled, schema changes can be applied automatically on startup against the connected database.
 
 ## Assumptions

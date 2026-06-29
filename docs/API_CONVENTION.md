@@ -12,21 +12,46 @@
 
 ## Endpoint naming
 
-Pending.
+Auth endpoints are implemented under `/auth`:
 
-- No business controller methods are currently implemented in `src`.
-- `src/app.controller.ts` exists but does not expose a route handler.
+- `POST /auth/google/login`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+- `POST /auth/logout-all`
+- `GET /auth/sessions`
+- `DELETE /auth/sessions/:sessionId`
+- `GET /auth/me`
+
+Other business endpoint naming is Pending.
 
 ## Request DTO convention
 
-Not implemented yet.
+Implemented for auth DTOs with `class-validator`.
 
-- No DTO files were found in the current source tree.
+Global validation still uses `whitelist`, `transform`, and `forbidNonWhitelisted`.
 
 ## Response format
 
 - No global response wrapper or response interceptor is implemented.
 - Current behavior should follow the default NestJS controller return shape.
+
+Auth token responses return:
+
+- `user`
+- `accessToken`
+- `refreshToken`
+- `sessionId`
+- `expiresIn`
+
+Session list responses do not include `refreshTokenHash`.
+
+## Authentication header
+
+Protected endpoints require:
+
+```http
+Authorization: Bearer <accessToken>
+```
 
 ## Pagination format
 
@@ -40,7 +65,7 @@ Not implemented yet.
 - Description: `SplitMate Backend API`
 - Version: `1.0`
 - Bearer auth is registered globally.
-- No controller-level Swagger decorators were found.
+- Auth controller methods use Swagger decorators and protected methods use bearer auth metadata.
 
 ## Assumptions
 

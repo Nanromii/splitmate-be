@@ -12,8 +12,8 @@
 
 Important note:
 
-- The current validation schema expects `JWT_SECRET`.
-- `.env.production.local` currently defines `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` instead.
+- The current validation schema expects split JWT secrets: `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`.
+- `GOOGLE_CLIENT_ID` must be configured for the frontend Google client used in production.
 
 ## Docker/deployment notes
 
@@ -41,6 +41,8 @@ Not implemented yet.
 - Run `pnpm test`.
 - Run `pnpm test:e2e`.
 - Verify production env variables match the current validation schema.
+- Verify `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are different strong secrets.
+- Verify `GOOGLE_CLIENT_ID` matches the deployed frontend Google client.
 - Verify PostgreSQL and Redis are reachable from the target environment.
 - Review the impact of `synchronize: true` before production startup.
 
