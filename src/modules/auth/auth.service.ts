@@ -6,36 +6,36 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { Request } from 'express';
+import type { Request } from 'express';
 import {
   AuthProvider,
   RevokeReason,
   SessionStatus,
   UserStatus,
 } from '../../common/enums';
-import { JwtPayload, RefreshTokenPayload } from '../../common/interfaces';
-import { CurrentUser } from '../../common/types';
+import {
+  CurrentUser,
+  JwtPayload,
+  RefreshTokenPayload,
+} from '../../common/types';
 import { generateUuid } from '../../common/utils/uuid.util';
 import { Session, User } from '../../database';
 import { SessionRepository, UserRepository } from '../repositories';
 import {
+  mapAuthTokenResponse,
+  mapSessionToAuthSessionResponse,
+  mapUserToAuthUserResponse,
+} from './auth.mapper';
+import {
+  AuthActionResponseDto,
+  AuthSessionResponseDto,
   AuthTokenResponseDto,
   AuthUserResponseDto,
-  SessionResponseDto,
-} from './dto/auth-response.dto';
-import { GoogleLoginDto } from './dto/google-login.dto';
-import { GoogleProfile, GoogleTokenService } from './google-token.service';
-
-type RequestMetadata = {
-  userAgent?: string;
-  ipAddress?: string;
-};
-
-type TokenPair = {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-};
+} from './dto/response';
+import { GoogleLoginRequestDto } from './dto/request';
+import { GoogleTokenService } from './google-token.service';
+import { AUTH_ERROR_MESSAGES } from './messages';
+import { AuthTokenPair, GoogleUserProfile, RequestMetadata } from './types';
 
 @Injectable()
 export class AuthService {
@@ -48,7 +48,7 @@ export class AuthService {
   ) {}
 
   async loginWithGoogle(
-    dto: GoogleLoginDto,
+    dto: GoogleLoginRequestDto,
     request: Request,
   ): Promise<AuthTokenResponseDto> {
     const profile = await this.googleTokenService.verifyIdToken(dto.idToken);
@@ -101,7 +101,9 @@ export class AuthService {
 
     if (!tokenMatches) {
       await this.revokeSession(session, RevokeReason.REUSE_DETECTED);
-      throw new UnauthorizedException('Refresh token invalid');
+      throw new UnauthorizedException(
+        AUTH_ERROR_MESSAGES.REFRESH_TOKEN_INVALID,
+      );
     }
 
     const tokens = await this.generateTokenPair(session.user, session.id);
@@ -113,7 +115,7 @@ export class AuthService {
     return this.buildAuthResponse(session.user, session.id, tokens);
   }
 
-  async logout(currentUser: CurrentUser): Promise<{ revoked: true }> {
+  async logout(currentUser: CurrentUser): Promise<AuthActionResponseDto> {
     const session = await this.findOwnedSession(
       currentUser.sessionId,
       currentUser.id,
@@ -124,7 +126,7 @@ export class AuthService {
     return { revoked: true };
   }
 
-  async logoutAll(currentUser: CurrentUser): Promise<{ revoked: true }> {
+  async logoutAll(currentUser: CurrentUser): Promise<AuthActionResponseDto> {
     await this.sessionRepository
       .createQueryBuilder()
       .update(Session)
@@ -141,7 +143,9 @@ export class AuthService {
     return { revoked: true };
   }
 
-  async listSessions(currentUser: CurrentUser): Promise<SessionResponseDto[]> {
+  async listSessions(
+    currentUser: CurrentUser,
+  ): Promise<AuthSessionResponseDto[]> {
     const sessions = await this.sessionRepository.find({
       where: {
         userId: currentUser.id,
@@ -151,13 +155,13 @@ export class AuthService {
       },
     });
 
-    return sessions.map((session) => this.serializeSession(session));
+    return sessions.map((session) => mapSessionToAuthSessionResponse(session));
   }
 
   async revokeOwnedSession(
     sessionId: string,
     currentUser: CurrentUser,
-  ): Promise<{ revoked: true }> {
+  ): Promise<AuthActionResponseDto> {
     const session = await this.findOwnedSession(sessionId, currentUser.id);
 
     await this.revokeSession(session, RevokeReason.LOGOUT);
@@ -173,7 +177,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.USER_NOT_FOUND);
     }
 
     this.assertUserCanAuthenticate(user);
@@ -189,11 +193,11 @@ export class AuthService {
     this.assertUserCanAuthenticate(session.user);
 
     if (session.user.id !== payload.sub) {
-      throw new UnauthorizedException('Invalid access token');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.ACCESS_TOKEN_INVALID);
     }
 
     if (session.user.tokenVersion !== payload.tokenVersion) {
-      throw new UnauthorizedException('Invalid access token');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.ACCESS_TOKEN_INVALID);
     }
 
     return {
@@ -204,7 +208,9 @@ export class AuthService {
     };
   }
 
-  private async findOrCreateGoogleUser(profile: GoogleProfile): Promise<User> {
+  private async findOrCreateGoogleUser(
+    profile: GoogleUserProfile,
+  ): Promise<User> {
     const existingUser = await this.userRepository.findOne({
       where: [
         {
@@ -258,7 +264,7 @@ export class AuthService {
   private async generateTokenPair(
     user: User,
     sessionId: string,
-  ): Promise<TokenPair> {
+  ): Promise<AuthTokenPair> {
     const accessExpiresIn = this.getAccessTokenExpiresIn();
     const refreshExpiresIn = this.getRefreshTokenExpiresIn();
     const basePayload: JwtPayload = {
@@ -298,7 +304,7 @@ export class AuthService {
         secret: this.configService.getOrThrow<string>('auth.jwt.accessSecret'),
       });
     } catch {
-      throw new UnauthorizedException('Invalid access token');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.ACCESS_TOKEN_INVALID);
     }
   }
 
@@ -316,7 +322,9 @@ export class AuthService {
       );
 
       if (payload.type !== 'refresh') {
-        throw new UnauthorizedException('Refresh token invalid');
+        throw new UnauthorizedException(
+          AUTH_ERROR_MESSAGES.REFRESH_TOKEN_INVALID,
+        );
       }
 
       return payload;
@@ -327,12 +335,14 @@ export class AuthService {
       ) {
         throw new UnauthorizedException(
           this.isTokenExpiredError(error)
-            ? 'Refresh token expired'
-            : 'Refresh token invalid',
+            ? AUTH_ERROR_MESSAGES.REFRESH_TOKEN_EXPIRED
+            : AUTH_ERROR_MESSAGES.REFRESH_TOKEN_INVALID,
         );
       }
 
-      throw new UnauthorizedException('Refresh token invalid');
+      throw new UnauthorizedException(
+        AUTH_ERROR_MESSAGES.REFRESH_TOKEN_INVALID,
+      );
     }
   }
 
@@ -347,7 +357,7 @@ export class AuthService {
       .getOne();
 
     if (!session) {
-      throw new UnauthorizedException('Session not found');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.SESSION_NOT_FOUND);
     }
 
     return session;
@@ -364,7 +374,7 @@ export class AuthService {
     });
 
     if (!session) {
-      throw new UnauthorizedException('Session not found');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.SESSION_NOT_FOUND);
     }
 
     return session;
@@ -382,7 +392,7 @@ export class AuthService {
     });
 
     if (!session) {
-      throw new NotFoundException('Session not found');
+      throw new NotFoundException(AUTH_ERROR_MESSAGES.SESSION_NOT_FOUND);
     }
 
     return session;
@@ -390,27 +400,27 @@ export class AuthService {
 
   private assertSessionCanRefresh(session: Session): void {
     if (session.status !== SessionStatus.ACTIVE || session.revokedAt) {
-      throw new UnauthorizedException('Session revoked');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.SESSION_REVOKED);
     }
 
     if (session.expiresAt.getTime() <= Date.now()) {
-      throw new UnauthorizedException('Session expired');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.SESSION_EXPIRED);
     }
   }
 
   private assertSessionCanUseAccessToken(session: Session): void {
     if (session.status !== SessionStatus.ACTIVE || session.revokedAt) {
-      throw new UnauthorizedException('Session revoked');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.SESSION_REVOKED);
     }
 
     if (session.expiresAt.getTime() <= Date.now()) {
-      throw new UnauthorizedException('Session expired');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.SESSION_EXPIRED);
     }
   }
 
   private assertUserCanAuthenticate(user: User): void {
     if (user.status !== UserStatus.ACTIVE) {
-      throw new UnauthorizedException('User is not active');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.USER_INACTIVE);
     }
   }
 
@@ -432,42 +442,13 @@ export class AuthService {
   private buildAuthResponse(
     user: User,
     sessionId: string,
-    tokens: TokenPair,
+    tokens: AuthTokenPair,
   ): AuthTokenResponseDto {
-    return {
-      user: this.serializeUser(user),
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      sessionId,
-      expiresIn: tokens.expiresIn,
-    };
+    return mapAuthTokenResponse(user, sessionId, tokens);
   }
 
   private serializeUser(user: User): AuthUserResponseDto {
-    return {
-      id: user.id,
-      email: user.email,
-      displayName: user.displayName,
-      avatarUrl: user.avatarUrl ?? null,
-      provider: user.provider,
-      role: user.role,
-      status: user.status,
-    };
-  }
-
-  private serializeSession(session: Session): SessionResponseDto {
-    return {
-      sessionId: session.id,
-      deviceId: session.deviceId ?? null,
-      deviceName: session.deviceName ?? null,
-      userAgent: session.userAgent ?? null,
-      ipAddress: session.ipAddress ?? null,
-      status: session.status,
-      createdAt: session.createdAt,
-      lastUsedAt: session.lastActivityAt,
-      expiresAt: session.expiresAt,
-      revokedAt: session.revokedAt ?? null,
-    };
+    return mapUserToAuthUserResponse(user);
   }
 
   private getRequestMetadata(request: Request): RequestMetadata {
@@ -493,7 +474,7 @@ export class AuthService {
     const match = /^(\d+)([smhd])?$/.exec(value);
 
     if (!match) {
-      throw new Error(`Unsupported duration: ${value}`);
+      throw new Error(AUTH_ERROR_MESSAGES.UNSUPPORTED_TOKEN_DURATION);
     }
 
     const amount = Number(match[1]);
@@ -509,7 +490,7 @@ export class AuthService {
       case 'd':
         return amount * 24 * 60 * 60 * 1000;
       default:
-        throw new Error(`Unsupported duration unit: ${unit}`);
+        throw new Error(AUTH_ERROR_MESSAGES.UNSUPPORTED_TOKEN_DURATION_UNIT);
     }
   }
 

@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
-export class GoogleLoginDto {
+export class GoogleLoginRequestDto {
   @ApiProperty({
-    description: 'Google ID token issued for the configured Google client id',
+    description: 'Google ID token được cấp cho `GOOGLE_CLIENT_ID` đã cấu hình.',
     example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6Ij...',
   })
   @IsString()
@@ -11,7 +11,7 @@ export class GoogleLoginDto {
   idToken: string;
 
   @ApiPropertyOptional({
-    description: 'Client-provided device id',
+    description: 'Mã định danh thiết bị do client cung cấp.',
     example: 'web-chrome-profile-1',
   })
   @IsOptional()
@@ -20,7 +20,7 @@ export class GoogleLoginDto {
   deviceId?: string;
 
   @ApiPropertyOptional({
-    description: 'Human-readable device name',
+    description: 'Tên thiết bị hiển thị cho người dùng.',
     example: 'Chrome on Windows',
   })
   @IsOptional()

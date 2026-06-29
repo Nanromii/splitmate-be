@@ -16,6 +16,7 @@ import { SessionRepository, UserRepository } from '../repositories';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
+import { AUTH_ERROR_MESSAGES } from './messages';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -230,7 +231,7 @@ describe('AuthService', () => {
           ip: '127.0.0.1',
         } as unknown as Request,
       ),
-    ).rejects.toThrow('User is not active');
+    ).rejects.toThrow(AUTH_ERROR_MESSAGES.USER_INACTIVE);
 
     expect(sessionRepository.save).not.toHaveBeenCalled();
   });
@@ -275,7 +276,7 @@ describe('AuthService', () => {
     });
 
     await expect(service.refresh('old-refresh-token')).rejects.toThrow(
-      'Refresh token invalid',
+      AUTH_ERROR_MESSAGES.REFRESH_TOKEN_INVALID,
     );
 
     expect(session.status).toBe(SessionStatus.REVOKED);
@@ -335,14 +336,14 @@ describe('AuthService', () => {
         role: UserRole.USER,
         sessionId: '01980000-0000-7000-8000-000000000002',
       }),
-    ).rejects.toThrow('Session not found');
+    ).rejects.toThrow(AUTH_ERROR_MESSAGES.SESSION_NOT_FOUND);
   });
 
   it('should reject invalid access tokens', async () => {
     jwtService.verifyAsync.mockRejectedValue(new Error('bad token'));
 
     await expect(service.validateAccessToken('bad-token')).rejects.toThrow(
-      'Invalid access token',
+      AUTH_ERROR_MESSAGES.ACCESS_TOKEN_INVALID,
     );
   });
 });

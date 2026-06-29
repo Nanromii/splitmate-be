@@ -5,14 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../../../common/decorators';
-import { CurrentUser } from '../../../common/types';
+import { RequestWithUser } from '../../../common/types';
 import { AuthService } from '../auth.service';
-
-type RequestWithUser = Request & {
-  user?: CurrentUser;
-};
+import { AUTH_ERROR_MESSAGES } from '../messages';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -43,13 +40,13 @@ export class JwtAuthGuard implements CanActivate {
     const authorization = request.headers.authorization;
 
     if (!authorization) {
-      throw new UnauthorizedException('Missing bearer token');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.MISSING_BEARER_TOKEN);
     }
 
     const [scheme, token] = authorization.split(' ');
 
     if (scheme !== 'Bearer' || !token) {
-      throw new UnauthorizedException('Invalid bearer token');
+      throw new UnauthorizedException(AUTH_ERROR_MESSAGES.INVALID_BEARER_TOKEN);
     }
 
     return token;

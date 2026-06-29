@@ -1,6 +1,6 @@
 import { UserRole } from '../enums';
 
-export interface JwtPayload {
+export type JwtPayload = {
   sub: string;
 
   sessionId: string;
@@ -10,4 +10,4 @@ export interface JwtPayload {
   role: UserRole;
 
   tokenVersion: number;
-}
+};

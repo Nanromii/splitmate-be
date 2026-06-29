@@ -1,0 +1,17 @@
+export const AUTH_ERROR_MESSAGES = {
+  GOOGLE_TOKEN_INVALID: 'Token Google không hợp lệ.',
+  GOOGLE_TOKEN_EXPIRED: 'Token Google đã hết hạn.',
+  GOOGLE_EMAIL_NOT_VERIFIED: 'Email Google chưa được xác minh.',
+  USER_NOT_FOUND: 'Không tìm thấy người dùng.',
+  USER_INACTIVE: 'Tài khoản không còn hoạt động.',
+  MISSING_BEARER_TOKEN: 'Thiếu bearer token.',
+  INVALID_BEARER_TOKEN: 'Bearer token không hợp lệ.',
+  ACCESS_TOKEN_INVALID: 'Access token không hợp lệ.',
+  REFRESH_TOKEN_INVALID: 'Refresh token không hợp lệ.',
+  REFRESH_TOKEN_EXPIRED: 'Refresh token đã hết hạn.',
+  SESSION_NOT_FOUND: 'Không tìm thấy phiên đăng nhập.',
+  SESSION_REVOKED: 'Phiên đăng nhập đã bị thu hồi.',
+  SESSION_EXPIRED: 'Phiên đăng nhập đã hết hạn.',
+  UNSUPPORTED_TOKEN_DURATION: 'Cấu hình thời hạn token không được hỗ trợ.',
+  UNSUPPORTED_TOKEN_DURATION_UNIT: 'Đơn vị thời hạn token không được hỗ trợ.',
+} as const;
