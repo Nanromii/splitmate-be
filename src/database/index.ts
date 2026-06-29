@@ -9,3 +9,5 @@ export * from './file.entity';
 export * from './device-token.entity';
 export * from './notification.entity';
 export * from './audit-log.entity';
+export * from './session.entity';
+export * from './email-verification.entity';
