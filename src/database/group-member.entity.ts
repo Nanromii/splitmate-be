@@ -1,16 +1,19 @@
-import { Entity, Index, BaseEntity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { GroupRole } from "../common/enums";
-import { Group } from "./group.entity";
-import { User } from "./user.entity";
+import {
+  Entity,
+  Index,
+  BaseEntity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { GroupRole } from '../common/enums';
+import { Group } from './group.entity';
+import { User } from './user.entity';
 
 @Entity('group_members')
-@Index(
-  'uq_group_members_group_user',
-  ['groupId', 'userId'],
-  {
-    unique: true,
-  },
-)
+@Index('uq_group_members_group_user', ['groupId', 'userId'], {
+  unique: true,
+})
 export class GroupMember extends BaseEntity {
   @Index('idx_group_members_group_id')
   @Column({

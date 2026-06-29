@@ -35,21 +35,21 @@ export abstract class BaseEntity {
   deletedAt?: Date | null;
 
   @Column({
-    name: 'updated_at',
+    name: 'created_by',
     type: 'uuid',
     nullable: true,
   })
   createdBy?: string | null;
 
   @Column({
-    name: 'created_by',
+    name: 'updated_by',
     type: 'uuid',
     nullable: true,
   })
   updatedBy?: string | null;
 
   @Column({
-    name: 'updated_by',
+    name: 'deleted_by',
     type: 'uuid',
     nullable: true,
   })

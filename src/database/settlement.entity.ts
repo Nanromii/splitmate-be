@@ -1,7 +1,14 @@
-import { Entity, BaseEntity, Index, Column, ManyToOne, JoinColumn } from "typeorm";
-import { SettlementStatus } from "../common/enums";
-import { Group } from "./group.entity";
-import { User } from "./user.entity";
+import {
+  Entity,
+  BaseEntity,
+  Index,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { SettlementStatus } from '../common/enums';
+import { Group } from './group.entity';
+import { User } from './user.entity';
 
 @Entity('settlements')
 export class Settlement extends BaseEntity {

@@ -1,10 +1,14 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  Index,
-} from 'typeorm';
+import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { AuthProvider, UserRole, UserStatus } from '../common/enums';
+import { BaseEntity } from './base.entity';
+import { DeviceToken } from './device-token.entity';
+import { ExpenseSplit } from './expense-split.entity';
+import { Expense } from './expense.entity';
+import { GroupMember } from './group-member.entity';
+import { Group } from './group.entity';
+import { Notification } from './notification.entity';
+import { Session } from './session.entity';
+import { Settlement } from './settlement.entity';
 
 @Entity({
   name: 'users',
@@ -13,6 +17,9 @@ import { AuthProvider, UserRole, UserStatus } from '../common/enums';
 @Index('idx_users_username', ['username'])
 @Index('idx_users_status', ['status'])
 @Index('idx_users_provider', ['provider'])
+@Index('uq_users_provider_account', ['provider', 'providerAccountId'], {
+  unique: true,
+})
 export class User extends BaseEntity {
   @Column({
     name: 'email',
@@ -56,11 +63,12 @@ export class User extends BaseEntity {
     name: 'password_hash',
     type: 'varchar',
     length: 255,
-    nullable: false,
+    nullable: true,
     select: false,
-    comment: 'Argon2 hashed password',
+    comment:
+      'Password hash for non-Google providers. Not used by Google login.',
   })
-  passwordHash: string;
+  passwordHash?: string | null;
 
   @Column({
     name: 'provider',
@@ -70,6 +78,15 @@ export class User extends BaseEntity {
     comment: 'Authentication provider',
   })
   provider: AuthProvider;
+
+  @Column({
+    name: 'provider_account_id',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: 'Provider-specific account id, such as Google sub',
+  })
+  providerAccountId?: string | null;
 
   @Column({
     name: 'email_verified_at',
@@ -112,4 +129,31 @@ export class User extends BaseEntity {
     comment: 'Last successful login time',
   })
   lastLoginAt?: Date | null;
+
+  @OneToMany(() => Session, (session) => session.user)
+  sessions: Session[];
+
+  @OneToMany(() => Group, (group) => group.owner)
+  ownedGroups: Group[];
+
+  @OneToMany(() => GroupMember, (membership) => membership.user)
+  memberships: GroupMember[];
+
+  @OneToMany(() => Expense, (expense) => expense.paidBy)
+  paidExpenses: Expense[];
+
+  @OneToMany(() => ExpenseSplit, (split) => split.user)
+  expenseSplits: ExpenseSplit[];
+
+  @OneToMany(() => Settlement, (settlement) => settlement.fromUser)
+  outgoingSettlements: Settlement[];
+
+  @OneToMany(() => Settlement, (settlement) => settlement.toUser)
+  incomingSettlements: Settlement[];
+
+  @OneToMany(() => DeviceToken, (deviceToken) => deviceToken.user)
+  deviceTokens: DeviceToken[];
+
+  @OneToMany(() => Notification, (notification) => notification.user)
+  notifications: Notification[];
 }

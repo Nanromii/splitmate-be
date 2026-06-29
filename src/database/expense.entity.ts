@@ -1,8 +1,16 @@
-import { Entity, BaseEntity, Index, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
-import { Currency } from "../common/enums";
-import { Group } from "./group.entity";
-import { User } from "./user.entity";
-import { ExpenseSplit } from "./expense-split.entity";
+import {
+  Entity,
+  BaseEntity,
+  Index,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
+import { Currency } from '../common/enums';
+import { Group } from './group.entity';
+import { User } from './user.entity';
+import { ExpenseSplit } from './expense-split.entity';
 
 @Entity('expenses')
 export class Expense extends BaseEntity {

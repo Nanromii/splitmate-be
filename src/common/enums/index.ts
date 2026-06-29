@@ -6,5 +6,6 @@ export * from './currency.enum';
 export * from './file-entity-type.enum';
 export * from './notification-type.enum';
 export * from './auth.enum';
+export * from './revoke-reason.enum';
 export * from './session.enum';
 export * from './user.enum';

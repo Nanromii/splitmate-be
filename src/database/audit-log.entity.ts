@@ -1,11 +1,14 @@
-import { Entity, Index, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
-import { AuditAction } from "../common/enums";
+import {
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
+import { AuditAction } from '../common/enums';
 
 @Entity('audit_logs')
-@Index(
-  'idx_audit_logs_entity',
-  ['entityType', 'entityId'],
-)
+@Index('idx_audit_logs_entity', ['entityType', 'entityId'])
 export class AuditLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;

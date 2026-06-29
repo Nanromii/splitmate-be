@@ -1,15 +1,18 @@
-import { Entity, Index, BaseEntity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { DevicePlatform } from "../common/enums";
-import { User } from "./user.entity";
+import {
+  Entity,
+  Index,
+  BaseEntity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { DevicePlatform } from '../common/enums';
+import { User } from './user.entity';
 
 @Entity('device_tokens')
-@Index(
-  'uq_device_tokens_user_token',
-  ['userId', 'token'],
-  {
-    unique: true,
-  },
-)
+@Index('uq_device_tokens_user_token', ['userId', 'token'], {
+  unique: true,
+})
 export class DeviceToken extends BaseEntity {
   @Index('idx_device_tokens_user_id')
   @Column({

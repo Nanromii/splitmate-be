@@ -2,7 +2,7 @@
 
 ## Project overview
 
-SplitMate is a NestJS backend project for an expense-sharing domain. The current source code mainly contains application bootstrap, environment and database configuration, domain entities, and a small set of custom repositories. Business modules such as auth, users, groups, expenses, settlements, controllers, DTOs, guards, interceptors, and middleware are not implemented yet in `src`.
+SplitMate is a NestJS backend project for an expense-sharing domain. The current source code contains application bootstrap, environment and database configuration, domain entities, custom repositories, and Google-only authentication with JWT access/refresh tokens and session management. Other business modules such as groups, expenses, settlements, interceptors, and middleware are still not implemented yet in `src`.
 
 ## Tech stack
 
@@ -42,23 +42,15 @@ Validated by `src/configs/env-validation.config.ts`:
 - `DB_DATABASE`
 - `REDIS_HOST`
 - `REDIS_PORT`
-- `JWT_SECRET`
-
-Present in `env.example`:
-
-- `JWT_ACCESS_EXPIRES_IN`
-- `JWT_REFRESH_EXPIRES_IN`
-
-Present in `.env.development.local` and `.env.production.local`:
-
 - `JWT_ACCESS_SECRET`
-- `JWT_REFRESH_SECRET`
 - `JWT_ACCESS_EXPIRES_IN`
+- `JWT_REFRESH_SECRET`
 - `JWT_REFRESH_EXPIRES_IN`
+- `GOOGLE_CLIENT_ID`
 
 Important note:
 
-- The current env validation schema expects `JWT_SECRET`, but the local env files define `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`. This is an actual inconsistency in the current source.
+- Auth uses separate access and refresh token secrets. `JWT_SECRET` is no longer validated by the current source.
 
 ## Available scripts
 
@@ -86,7 +78,8 @@ Important note:
 Current status:
 
 - Swagger is configured in `src/main.ts`.
-- No business controllers or route handlers are implemented in `src`, so there are no confirmed domain endpoints yet.
+- Auth endpoints are implemented under `/api/v1/auth`.
+- Other domain endpoints are Pending.
 
 ## Project structure
 
@@ -99,7 +92,10 @@ splitmate/
 │  ├─ configs/
 │  ├─ database/
 │  ├─ modules/
-│  │  └─ repositories/
+│  │  ├─ auth/
+│  │  ├─ repositories/
+│  │  ├─ sessions/
+│  │  └─ users/
 │  ├─ redis/                  # empty
 │  ├─ app.controller.ts
 │  ├─ app.module.ts
@@ -117,8 +113,8 @@ splitmate/
 - Detailed project docs live under `docs/`.
 - `docker-compose.yml` defines PostgreSQL and Redis for local development.
 - `pnpm build` currently passes.
-- `pnpm test` currently fails because `src/app.controller.spec.ts` still expects `AppController.getHello()`, but that method is not implemented in `src/app.controller.ts`.
-- `pnpm test:e2e` currently fails during bootstrap because config validation does not receive the required env values in the current test setup.
+- `pnpm test` currently passes.
+- `pnpm test:e2e` currently passes with a focused auth routing spec.
 
 ## Assumptions
 

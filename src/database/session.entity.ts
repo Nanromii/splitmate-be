@@ -1,13 +1,7 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { SessionStatus } from '../common/enums';
 import { RevokeReason } from '../common/enums/revoke-reason.enum';
+import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 
 @Entity({

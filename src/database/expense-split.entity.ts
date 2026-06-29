@@ -1,15 +1,18 @@
-import { Entity, Index, BaseEntity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { Expense } from "./expense.entity";
-import { User } from "./user.entity";
+import {
+  Entity,
+  Index,
+  BaseEntity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Expense } from './expense.entity';
+import { User } from './user.entity';
 
 @Entity('expense_splits')
-@Index(
-  'uq_expense_splits_expense_user',
-  ['expenseId', 'userId'],
-  {
-    unique: true,
-  },
-)
+@Index('uq_expense_splits_expense_user', ['expenseId', 'userId'], {
+  unique: true,
+})
 export class ExpenseSplit extends BaseEntity {
   @Index('idx_expense_splits_expense_id')
   @Column({

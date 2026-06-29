@@ -1,6 +1,13 @@
-import { Entity, BaseEntity, Index, Column, ManyToOne, JoinColumn } from "typeorm";
-import { NotificationType } from "../common/enums";
-import { User } from "./user.entity";
+import {
+  Entity,
+  BaseEntity,
+  Index,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { NotificationType } from '../common/enums';
+import { User } from './user.entity';
 
 @Entity('notifications')
 export class Notification extends BaseEntity {

@@ -1,9 +1,16 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { User } from "./user.entity";
-import { BaseEntity } from "./base.entity";
-import { GroupMember } from "./group-member.entity";
-import { Expense } from "./expense.entity";
-import { Settlement } from "./settlement.entity";
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+import { User } from './user.entity';
+import { BaseEntity } from './base.entity';
+import { GroupMember } from './group-member.entity';
+import { Expense } from './expense.entity';
+import { Settlement } from './settlement.entity';
 
 @Entity('groups')
 export class Group extends BaseEntity {

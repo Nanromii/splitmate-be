@@ -1,5 +1,5 @@
-import { Entity, BaseEntity, Column, Index } from "typeorm";
-import { FileEntityType } from "../common/enums";
+import { Entity, BaseEntity, Column, Index } from 'typeorm';
+import { FileEntityType } from '../common/enums';
 
 @Entity('files')
 export class File extends BaseEntity {
