@@ -1,68 +1,115 @@
-import { Entity, BaseEntity, Index, Column, OneToMany } from "typeorm";
-import { GroupMember } from "./group-member.entity";
-import { Group } from "./group.entity";
-import { ExpenseSplit } from "./expense-split.entity";
-import { Expense } from "./expense.entity";
-import { Settlement } from "./settlement.entity";
-import { DeviceToken } from "./device-token.entity";
-import { Notification } from "./notification.entity";
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  Index,
+} from 'typeorm';
+import { AuthProvider, UserRole, UserStatus } from '../common/enums';
 
-@Entity('users')
+@Entity({
+  name: 'users',
+})
+@Index('idx_users_email', ['email'])
+@Index('idx_users_username', ['username'])
+@Index('idx_users_status', ['status'])
+@Index('idx_users_provider', ['provider'])
 export class User extends BaseEntity {
-  @Index('uq_users_email', { unique: true })
   @Column({
-    length: 255,
+    name: 'email',
+    type: 'varchar',
+    length: 320,
+    nullable: false,
+    unique: true,
+    comment: 'User email address',
   })
   email: string;
 
   @Column({
+    name: 'username',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    unique: true,
+    comment: 'Public username',
+  })
+  username?: string | null;
+
+  @Column({
+    name: 'display_name',
+    type: 'varchar',
+    length: 100,
+    nullable: false,
+    comment: 'Display name',
+  })
+  displayName: string;
+
+  @Column({
+    name: 'avatar_url',
+    type: 'varchar',
+    length: 1024,
+    nullable: true,
+    comment: 'Avatar image url',
+  })
+  avatarUrl?: string | null;
+
+  @Column({
     name: 'password_hash',
+    type: 'varchar',
     length: 255,
+    nullable: false,
+    select: false,
+    comment: 'Argon2 hashed password',
   })
   passwordHash: string;
 
   @Column({
-    name: 'full_name',
-    length: 255,
+    name: 'provider',
+    type: 'enum',
+    enum: AuthProvider,
+    default: AuthProvider.LOCAL,
+    comment: 'Authentication provider',
   })
-  fullName: string;
+  provider: AuthProvider;
 
   @Column({
-    name: 'avatar_url',
+    name: 'email_verified_at',
+    type: 'timestamptz',
     nullable: true,
-    type: 'text',
+    comment: 'Email verification timestamp',
   })
-  avatarUrl?: string;
+  emailVerifiedAt?: Date | null;
 
   @Column({
-    name: 'is_verified',
-    default: false,
+    name: 'token_version',
+    type: 'smallint',
+    default: 0,
+    comment: 'JWT token version',
   })
-  isVerified: boolean;
+  tokenVersion: number;
 
-  // Relations
+  @Column({
+    name: 'role',
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+    comment: 'System role',
+  })
+  role: UserRole;
 
-  @OneToMany(() => Group, (group) => group.owner)
-  ownedGroups: Group[];
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: UserStatus,
+    default: UserStatus.PENDING_VERIFICATION,
+    comment: 'Current user status',
+  })
+  status: UserStatus;
 
-  @OneToMany(() => GroupMember, (member) => member.user)
-  memberships: GroupMember[];
-
-  @OneToMany(() => Expense, (expense) => expense.paidBy)
-  paidExpenses: Expense[];
-
-  @OneToMany(() => ExpenseSplit, (split) => split.user)
-  expenseSplits: ExpenseSplit[];
-
-  @OneToMany(() => Settlement, (settlement) => settlement.fromUser)
-  outgoingSettlements: Settlement[];
-
-  @OneToMany(() => Settlement, (settlement) => settlement.toUser)
-  incomingSettlements: Settlement[];
-
-  @OneToMany(() => DeviceToken, (token) => token.user)
-  deviceTokens: DeviceToken[];
-
-  @OneToMany(() => Notification, (notification) => notification.user)
-  notifications: Notification[];
+  @Column({
+    name: 'last_login_at',
+    type: 'timestamptz',
+    nullable: true,
+    comment: 'Last successful login time',
+  })
+  lastLoginAt?: Date | null;
 }
