@@ -7,6 +7,7 @@
 - Connection config nằm trong `src/configs/database.config.ts`
 - `autoLoadEntities: true`
 - `synchronize: true`
+- Auth/session data access hiện đi qua custom repository methods trong `src/modules/repositories`, thay vì để service tự nhúng query conditions và `QueryBuilder`.
 
 ## Entities/tables chính
 

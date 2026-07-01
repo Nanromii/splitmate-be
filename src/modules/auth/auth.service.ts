@@ -13,9 +13,13 @@ import {
   SessionStatus,
   UserStatus,
 } from '../../common/enums';
+import { GoogleUserProfile } from '../../common/interfaces';
+import { AUTH_ERROR_MESSAGES } from '../../common/messages';
 import {
+  AuthTokenPair,
   CurrentUser,
   JwtPayload,
+  RequestMetadata,
   RefreshTokenPayload,
 } from '../../common/types';
 import { generateUuid } from '../../common/utils/uuid.util';
@@ -34,8 +38,6 @@ import {
 } from './dto/response';
 import { GoogleLoginRequestDto } from './dto/request';
 import { GoogleTokenService } from './google-token.service';
-import { AUTH_ERROR_MESSAGES } from './messages';
-import { AuthTokenPair, GoogleUserProfile, RequestMetadata } from './types';
 
 @Injectable()
 export class AuthService {
@@ -127,18 +129,7 @@ export class AuthService {
   }
 
   async logoutAll(currentUser: CurrentUser): Promise<AuthActionResponseDto> {
-    await this.sessionRepository
-      .createQueryBuilder()
-      .update(Session)
-      .set({
-        status: SessionStatus.REVOKED,
-        revokedAt: new Date(),
-        revokeReason: RevokeReason.LOGOUT_ALL,
-      })
-      .where('user_id = :userId', { userId: currentUser.id })
-      .andWhere('status = :status', { status: SessionStatus.ACTIVE })
-      .andWhere('revoked_at IS NULL')
-      .execute();
+    await this.sessionRepository.revokeAllActiveByUserId(currentUser.id);
 
     return { revoked: true };
   }
@@ -146,14 +137,9 @@ export class AuthService {
   async listSessions(
     currentUser: CurrentUser,
   ): Promise<AuthSessionResponseDto[]> {
-    const sessions = await this.sessionRepository.find({
-      where: {
-        userId: currentUser.id,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    const sessions = await this.sessionRepository.findByUserIdOrderByCreatedAtDesc(
+      currentUser.id,
+    );
 
     return sessions.map((session) => mapSessionToAuthSessionResponse(session));
   }
@@ -170,11 +156,7 @@ export class AuthService {
   }
 
   async getMe(currentUser: CurrentUser): Promise<AuthUserResponseDto> {
-    const user = await this.userRepository.findOne({
-      where: {
-        id: currentUser.id,
-      },
-    });
+    const user = await this.userRepository.findById(currentUser.id);
 
     if (!user) {
       throw new UnauthorizedException(AUTH_ERROR_MESSAGES.USER_NOT_FOUND);
@@ -211,17 +193,11 @@ export class AuthService {
   private async findOrCreateGoogleUser(
     profile: GoogleUserProfile,
   ): Promise<User> {
-    const existingUser = await this.userRepository.findOne({
-      where: [
-        {
-          provider: AuthProvider.GOOGLE,
-          providerAccountId: profile.providerAccountId,
-        },
-        {
-          email: profile.email,
-        },
-      ],
-    });
+    const existingUser =
+      await this.userRepository.findByGoogleProviderAccountIdOrEmail(
+        profile.providerAccountId,
+        profile.email,
+      );
 
     if (!existingUser) {
       const user = this.userRepository.create({
@@ -349,12 +325,10 @@ export class AuthService {
   private async findSessionWithUserAndRefreshHash(
     sessionId: string,
   ): Promise<Session> {
-    const session = await this.sessionRepository
-      .createQueryBuilder('session')
-      .addSelect('session.refreshTokenHash')
-      .leftJoinAndSelect('session.user', 'user')
-      .where('session.id = :sessionId', { sessionId })
-      .getOne();
+    const session =
+      await this.sessionRepository.findByIdWithUserAndRefreshTokenHash(
+        sessionId,
+      );
 
     if (!session) {
       throw new UnauthorizedException(AUTH_ERROR_MESSAGES.SESSION_NOT_FOUND);
@@ -364,14 +338,7 @@ export class AuthService {
   }
 
   private async findSessionWithUser(sessionId: string): Promise<Session> {
-    const session = await this.sessionRepository.findOne({
-      where: {
-        id: sessionId,
-      },
-      relations: {
-        user: true,
-      },
-    });
+    const session = await this.sessionRepository.findByIdWithUser(sessionId);
 
     if (!session) {
       throw new UnauthorizedException(AUTH_ERROR_MESSAGES.SESSION_NOT_FOUND);
@@ -384,12 +351,10 @@ export class AuthService {
     sessionId: string,
     userId: string,
   ): Promise<Session> {
-    const session = await this.sessionRepository.findOne({
-      where: {
-        id: sessionId,
-        userId,
-      },
-    });
+    const session = await this.sessionRepository.findByIdAndUserId(
+      sessionId,
+      userId,
+    );
 
     if (!session) {
       throw new NotFoundException(AUTH_ERROR_MESSAGES.SESSION_NOT_FOUND);

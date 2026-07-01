@@ -28,6 +28,7 @@ Naming cho business endpoint khác Đang chờ bổ sung.
 
 - Request DTO nhận input từ client nằm trong `dto/request`.
 - Auth request DTO hiện dùng `class-validator`.
+- Shared auth type/interface dùng lại giữa controller, service, guard và token verification được gom ở `src/common/types/auth.type.ts` và `src/common/interfaces/auth.interface.ts`.
 - Global validation dùng `whitelist`, `transform` và `forbidNonWhitelisted`.
 
 ## Quy ước response DTO
@@ -36,6 +37,7 @@ Naming cho business endpoint khác Đang chờ bổ sung.
 - Không dùng entity trực tiếp làm response.
 - Không expose field nhạy cảm như `refreshTokenHash`, `passwordHash`, `deletedAt` hoặc token secret.
 - Auth dùng mapper nhỏ trong `src/modules/auth/auth.mapper.ts` để map entity sang response DTO.
+- Message trả client không được hardcode trong controller/service/guard/repository; auth message constants nằm trong `src/common/messages`.
 
 ## Định dạng response
 

@@ -10,12 +10,14 @@
 - `ConfigModule`: load environment toàn cục và validate bằng Joi.
 - `TypeOrmModule`: kết nối PostgreSQL.
 - `RepositoriesModule`: custom repositories cho `User`, `Expense`, `Group`, `GroupMember`, `Settlement` và `Session`.
-- `AuthModule`: Google login, JWT access/refresh tokens, session management, auth guard, request/response DTO, auth messages và auth types.
+- `AuthModule`: Google login, JWT access/refresh tokens, session management, auth guard, request/response DTO, mapper và Google token verification.
 - `UsersModule`: scaffold.
 - `SessionsModule`: scaffold.
 - `src/database`: entity definitions cho domain SplitMate.
 - `src/common/enums`: enum dùng chung.
-- `src/common/types`: type dùng chung giữa module, decorator và guard.
+- `src/common/types`: shared type dùng chung, hiện gom type theo domain auth.
+- `src/common/interfaces`: shared interface dùng chung, hiện gom interface theo domain auth.
+- `src/common/messages`: shared message constants trả về client.
 
 ## Luồng request
 
@@ -39,10 +41,12 @@ Trạng thái hiện tại:
 - `src/app.module.ts`: module composition.
 - `src/configs`: env validation và database configuration.
 - `src/database`: entity mapping và relation metadata.
-- `src/modules/auth`: Google auth endpoints, token/session service logic, guard, request/response DTO, mapper, message constants và Google token verification.
-- `src/modules/repositories`: data access layer.
+- `src/modules/auth`: Google auth endpoints, token/session service logic, guard, request/response DTO, mapper và Google token verification.
+- `src/modules/repositories`: data access layer; query conditions, order, relations và `QueryBuilder` cho auth/session nên nằm ở đây thay vì nhúng vào service.
 - `src/common/enums`: domain constants dùng chung.
-- `src/common/types`: type dùng chung như `CurrentUser`, `JwtPayload`, `RefreshTokenPayload`, `RequestWithUser`.
+- `src/common/types`: shared type dùng chung như `CurrentUser`, `JwtPayload`, `RefreshTokenPayload`, `RequestWithUser`, `AuthTokenPair` và `RequestMetadata`.
+- `src/common/interfaces`: shared interface dùng chung như `GoogleTokenInfo` và `GoogleUserProfile`.
+- `src/common/messages`: shared auth message constants.
 
 ## Hướng phụ thuộc
 
@@ -67,7 +71,9 @@ Trạng thái hiện tại:
 - TypeORM dùng `synchronize: true`.
 - Data access hiện được thể hiện qua custom repository classes.
 - Auth module tách DTO theo `dto/request` và `dto/response`.
-- Auth message trả client được gom trong `src/modules/auth/messages`.
+- Auth message trả client được gom trong `src/common/messages`.
+- Shared auth type/interface được gom trong `src/common/types/auth.type.ts` và `src/common/interfaces/auth.interface.ts`.
+- Auth service gọi repository methods có ý nghĩa nghiệp vụ thay vì nhúng trực tiếp `findOne/find/queryBuilder` cho session/user lookup.
 
 ## Giả định
 

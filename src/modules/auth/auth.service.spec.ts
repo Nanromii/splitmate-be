@@ -10,26 +10,29 @@ import {
   UserRole,
   UserStatus,
 } from '../../common/enums';
+import { AUTH_ERROR_MESSAGES } from '../../common/messages';
 import { AuthService } from './auth.service';
 import { GoogleTokenService } from './google-token.service';
 import { SessionRepository, UserRepository } from '../repositories';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
-import { AUTH_ERROR_MESSAGES } from './messages';
 
 describe('AuthService', () => {
   let service: AuthService;
   let userRepository: {
-    findOne: jest.Mock;
+    findByGoogleProviderAccountIdOrEmail: jest.Mock;
+    findById: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
   };
   let sessionRepository: {
     create: jest.Mock;
     save: jest.Mock;
-    findOne: jest.Mock;
-    createQueryBuilder: jest.Mock;
+    findByIdWithUserAndRefreshTokenHash: jest.Mock;
+    findByIdWithUser: jest.Mock;
+    findByIdAndUserId: jest.Mock;
+    revokeAllActiveByUserId: jest.Mock;
   };
   let jwtService: {
     signAsync: jest.Mock;
@@ -76,22 +79,10 @@ describe('AuthService', () => {
 
   type SessionRecord = Awaited<ReturnType<typeof makeSession>>;
 
-  const mockSessionQuery = (session: unknown) => {
-    const queryBuilder = {
-      addSelect: jest.fn().mockReturnThis(),
-      leftJoinAndSelect: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      getOne: jest.fn().mockResolvedValue(session),
-    };
-
-    sessionRepository.createQueryBuilder.mockReturnValue(queryBuilder);
-
-    return queryBuilder;
-  };
-
   beforeEach(async () => {
     userRepository = {
-      findOne: jest.fn(),
+      findByGoogleProviderAccountIdOrEmail: jest.fn(),
+      findById: jest.fn(),
       create: jest.fn((value: Partial<UserRecord>) => ({ ...user, ...value })),
       save: jest.fn((value: UserRecord) => Promise.resolve(value)),
     };
@@ -102,8 +93,10 @@ describe('AuthService', () => {
         savedSession = value;
         return Promise.resolve(value);
       }),
-      findOne: jest.fn(),
-      createQueryBuilder: jest.fn(),
+      findByIdWithUserAndRefreshTokenHash: jest.fn(),
+      findByIdWithUser: jest.fn(),
+      findByIdAndUserId: jest.fn(),
+      revokeAllActiveByUserId: jest.fn(),
     };
     jwtService = {
       signAsync: jest.fn(),
@@ -159,7 +152,7 @@ describe('AuthService', () => {
   });
 
   it('should create a Google user, session, and token pair', async () => {
-    userRepository.findOne.mockResolvedValue(null);
+    userRepository.findByGoogleProviderAccountIdOrEmail.mockResolvedValue(null);
     googleTokenService.verifyIdToken.mockResolvedValue({
       providerAccountId: 'google-sub',
       email: user.email,
@@ -210,7 +203,7 @@ describe('AuthService', () => {
   });
 
   it('should reject a suspended Google user without creating a session', async () => {
-    userRepository.findOne.mockResolvedValue({
+    userRepository.findByGoogleProviderAccountIdOrEmail.mockResolvedValue({
       ...user,
       status: UserStatus.SUSPENDED,
     });
@@ -238,7 +231,9 @@ describe('AuthService', () => {
 
   it('should rotate refresh tokens', async () => {
     const session = await makeSession('old-refresh-token');
-    mockSessionQuery(session);
+    sessionRepository.findByIdWithUserAndRefreshTokenHash.mockResolvedValue(
+      session,
+    );
     jwtService.verifyAsync.mockResolvedValue({
       sub: user.id,
       sessionId: session.id,
@@ -265,7 +260,9 @@ describe('AuthService', () => {
 
   it('should revoke the session when an old refresh token is reused', async () => {
     const session = await makeSession('new-refresh-token');
-    mockSessionQuery(session);
+    sessionRepository.findByIdWithUserAndRefreshTokenHash.mockResolvedValue(
+      session,
+    );
     jwtService.verifyAsync.mockResolvedValue({
       sub: user.id,
       sessionId: session.id,
@@ -285,7 +282,7 @@ describe('AuthService', () => {
 
   it('should revoke the current session on logout', async () => {
     const session = await makeSession();
-    sessionRepository.findOne.mockResolvedValue(session);
+    sessionRepository.findByIdAndUserId.mockResolvedValue(session);
 
     await expect(
       service.logout({
@@ -301,15 +298,7 @@ describe('AuthService', () => {
   });
 
   it('should revoke all active sessions for the current user', async () => {
-    const execute = jest.fn().mockResolvedValue(undefined);
-    const queryBuilder = {
-      update: jest.fn().mockReturnThis(),
-      set: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      execute,
-    };
-    sessionRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+    sessionRepository.revokeAllActiveByUserId.mockResolvedValue(undefined);
 
     await expect(
       service.logoutAll({
@@ -320,14 +309,13 @@ describe('AuthService', () => {
       }),
     ).resolves.toEqual({ revoked: true });
 
-    expect(queryBuilder.where).toHaveBeenCalledWith('user_id = :userId', {
-      userId: user.id,
-    });
-    expect(execute).toHaveBeenCalled();
+    expect(sessionRepository.revokeAllActiveByUserId).toHaveBeenCalledWith(
+      user.id,
+    );
   });
 
   it('should block revoking a session that does not belong to the user', async () => {
-    sessionRepository.findOne.mockResolvedValue(null);
+    sessionRepository.findByIdAndUserId.mockResolvedValue(null);
 
     await expect(
       service.revokeOwnedSession('01980000-0000-7000-8000-000000000099', {

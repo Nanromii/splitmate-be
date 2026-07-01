@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AUTH_ERROR_MESSAGES } from './messages';
-import { GoogleTokenInfo, GoogleUserProfile } from './types';
+import { GoogleTokenInfo, GoogleUserProfile } from '../../common/interfaces';
+import { AUTH_ERROR_MESSAGES } from '../../common/messages';
 
 @Injectable()
 export class GoogleTokenService {

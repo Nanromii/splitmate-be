@@ -27,7 +27,7 @@
 
 - Unit test hiện dùng Nest `TestingModule`.
 - `src/app.controller.spec.ts` dùng real `AppService`.
-- Auth tests mock repositories, JWT signing/verification, `ConfigService`, Google token verification và ESM-only `uuid` dependency.
+- Auth tests mock repository methods, JWT signing/verification, `ConfigService`, Google token verification và ESM-only `uuid` dependency.
 
 ## Nên test gì
 

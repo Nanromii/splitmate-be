@@ -28,9 +28,9 @@ Triển khai một phần cho auth bằng NestJS built-in exceptions. Chưa có 
 ## Quy ước message
 
 - Message auth trả client phải là tiếng Việt.
-- Message lỗi auth nằm trong `src/modules/auth/messages/ERROR.ts`.
-- Message thông tin/thành công auth nằm trong `src/modules/auth/messages/INFO.ts`.
-- Service/controller/guard không hardcode message trả client.
+- Message lỗi auth nằm trong `src/common/messages/ERROR.ts`.
+- Message thông tin/thành công auth nằm trong `src/common/messages/INFO.ts`.
+- Service/controller/guard/repository không hardcode message trả client.
 
 ## Error code dùng chung nếu có
 

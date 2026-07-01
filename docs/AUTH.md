@@ -87,6 +87,8 @@ Authorization: Bearer <accessToken>
 
 - Request DTO nằm trong `src/modules/auth/dto/request`.
 - Response DTO nằm trong `src/modules/auth/dto/response`.
+- Shared auth type nằm trong `src/common/types/auth.type.ts`.
+- Shared auth interface nằm trong `src/common/interfaces/auth.interface.ts`.
 - Response không trả `refreshTokenHash`, `passwordHash`, `deletedAt` hoặc token secret.
 - Entity không được dùng trực tiếp làm response.
 
@@ -103,4 +105,4 @@ Chỉ user có `status = active` được authenticate hoặc gọi protected en
 - Không lưu raw refresh token.
 - Refresh token cũ không dùng lại được sau rotation.
 - Access token secret và refresh token secret là hai env riêng.
-- Message lỗi auth trả client nằm trong `src/modules/auth/messages/ERROR.ts`.
+- Message lỗi auth trả client nằm trong `src/common/messages/ERROR.ts`.

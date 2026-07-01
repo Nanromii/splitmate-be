@@ -1,10 +1,10 @@
 import { Session, User } from '../../database';
+import { AuthTokenPair } from '../../common/types';
 import {
   AuthSessionResponseDto,
   AuthTokenResponseDto,
   AuthUserResponseDto,
 } from './dto/response';
-import { AuthTokenPair } from './types';
 
 export const mapUserToAuthUserResponse = (user: User): AuthUserResponseDto => ({
   id: user.id,
