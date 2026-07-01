@@ -5,9 +5,11 @@
 - Repository này là NestJS backend cho domain SplitMate.
 - Source hiện vẫn ở giai đoạn scaffold sớm.
 - Phần đã triển khai gồm bootstrap, config, enums, entities, custom repositories và auth chỉ hỗ trợ Google login với JWT/session management.
-- Các business module như groups, expenses, settlements, interceptors, middleware và message catalogs dùng chung vẫn Chưa triển khai.
+- Các business module như groups, expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
 - `UsersModule` và `SessionsModule` hiện chủ yếu là scaffold; workflow user/session đang được xử lý trong `AuthModule`.
-- `src/common/messages` và `src/redis` hiện đang trống.
+- `src/common/messages` là nơi gom shared message constants trả về client.
+- `src/common/interfaces` và `src/common/types` là nơi gom shared interface/type theo domain.
+- `src/redis` hiện đang trống.
 
 ## Quy tắc cho AI coding agents
 
@@ -18,9 +20,10 @@
 - Giữ docs và code khớp với implementation hiện tại, kể cả khi implementation còn thiếu.
 - Giữ auth chỉ hỗ trợ Google login trừ khi user yêu cầu rõ ràng phương thức khác.
 - Không thêm username/password login, password reset hoặc email verification endpoints nếu chưa được yêu cầu.
-- Không hardcode message trả về client trong service/controller/guard. Message auth phải lấy từ `src/modules/auth/messages/ERROR.ts` hoặc `INFO.ts`.
+- Không hardcode message trả về client trong service/controller/guard/repository. Message auth phải lấy từ `src/common/messages/ERROR.ts` hoặc `INFO.ts`.
 - Preserve entity table names, enum values và relation settings trừ khi user yêu cầu đổi.
 - Nêu rõ inconsistency thật trong codebase thay vì âm thầm chuẩn hóa.
+- Với query có `where`, `order`, `relations`, `select` hoặc `QueryBuilder`, ưu tiên đặt trong repository method có tên thể hiện ý nghĩa nghiệp vụ thay vì để trong service.
 
 ## Coding conventions
 
@@ -30,20 +33,20 @@
 - Giữ import explicit và cấu trúc local path đơn giản.
 - Ưu tiên cập nhật `src/configs`, `src/database`, `src/modules/repositories` và module hiện có thay vì tạo abstraction song song.
 - API bootstrap hiện dùng global prefix `api/v1`, global `ValidationPipe`, CORS và Swagger setup trong `src/main.ts`.
+- Không over-engineer bằng base repository, abstract factory hoặc layer mới nếu source hiện tại chưa cần.
 
 ## Folder/module conventions
 
 - `src/configs`: application và environment configuration.
 - `src/common/enums`: enum dùng chung cho entities.
-- `src/common/types`: type dùng chung như `CurrentUser`, `JwtPayload`, `RefreshTokenPayload`, `RequestWithUser`.
-- `src/common/messages`: Đang chờ bổ sung cho shared messages.
+- `src/common/types`: shared type dùng chung, gom theo domain như `auth.type.ts`.
+- `src/common/interfaces`: shared interface dùng chung, gom theo domain như `auth.interface.ts`.
+- `src/common/messages`: shared message constants trả về client, hiện đang gom auth messages tại đây.
 - `src/database`: entity definitions và local shared base entity.
 - `src/modules/repositories`: custom repository classes và repository module.
-- `src/modules/auth`: Google login, JWT tokens, session management, auth guard, request/response DTO, auth types, messages và Google token verification.
+- `src/modules/auth`: Google login, JWT tokens, session management, auth guard, request/response DTO, mapper và Google token verification.
 - `src/modules/auth/dto/request`: DTO nhận input từ client.
 - `src/modules/auth/dto/response`: DTO trả response cho client.
-- `src/modules/auth/messages`: message tiếng Việt cho auth.
-- `src/modules/auth/types`: type nội bộ của auth module.
 - `src/redis`: Chưa triển khai.
 - `test`: e2e tests và Jest e2e config.
 
