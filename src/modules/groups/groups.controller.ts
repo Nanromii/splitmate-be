@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -24,10 +25,15 @@ import {
 import { CurrentAuthUser } from '../../common/decorators';
 import type { CurrentUser } from '../../common/types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateGroupRequestDto, UpdateGroupRequestDto } from './dto/request';
+import {
+  CreateGroupRequestDto,
+  ListGroupsRequestDto,
+  UpdateGroupRequestDto,
+} from './dto/request';
 import {
   GroupActionResponseDto,
   GroupDetailResponseDto,
+  GroupListResponseDto,
   GroupMemberResponseDto,
   GroupResponseDto,
 } from './dto/response';
@@ -55,12 +61,13 @@ export class GroupsController {
 
   @Get()
   @ApiOperation({ summary: 'Lấy danh sách nhóm của người dùng hiện tại' })
-  @ApiOkResponse({ type: GroupResponseDto, isArray: true })
+  @ApiOkResponse({ type: GroupListResponseDto })
   @ApiUnauthorizedResponse({ description: 'Thiếu hoặc sai bearer token.' })
   listMyGroups(
     @CurrentAuthUser() currentUser: CurrentUser,
-  ): Promise<GroupResponseDto[]> {
-    return this.groupsService.listMyGroups(currentUser);
+    @Query() query: ListGroupsRequestDto,
+  ): Promise<GroupListResponseDto> {
+    return this.groupsService.listMyGroups(currentUser, query);
   }
 
   @Get(':groupId')

@@ -74,7 +74,11 @@ export class GroupRepository extends Repository<Group> {
       .getOne();
   }
 
-  findGroupsByActiveUserId(userId: string): Promise<Group[]> {
+  findGroupsByActiveUserId(params: {
+    userId: string;
+    skip: number;
+    take: number;
+  }): Promise<[Group[], number]> {
     return this.createQueryBuilder('group')
       .innerJoinAndSelect(
         'group.members',
@@ -85,13 +89,15 @@ export class GroupRepository extends Repository<Group> {
           'member.deleted_at IS NULL',
         ].join(' AND '),
         {
-          userId,
+          userId: params.userId,
           status: GroupMemberStatus.ACTIVE,
         },
       )
       .where('group.deleted_at IS NULL')
       .orderBy('group.created_at', 'DESC')
-      .getMany();
+      .skip(params.skip)
+      .take(params.take)
+      .getManyAndCount();
   }
 
   async softDeleteGroupById(groupId: string, userId: string): Promise<void> {

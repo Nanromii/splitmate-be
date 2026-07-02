@@ -17,13 +17,21 @@ import {
   mapGroupToGroupDetailResponse,
   mapGroupToGroupResponse,
 } from './groups.mapper';
-import { CreateGroupRequestDto, UpdateGroupRequestDto } from './dto/request';
+import {
+  CreateGroupRequestDto,
+  ListGroupsRequestDto,
+  UpdateGroupRequestDto,
+} from './dto/request';
 import {
   GroupActionResponseDto,
   GroupDetailResponseDto,
+  GroupListResponseDto,
   GroupMemberResponseDto,
   GroupResponseDto,
 } from './dto/response';
+
+const DEFAULT_GROUP_LIST_PAGE = 1;
+const DEFAULT_GROUP_LIST_LIMIT = 20;
 
 @Injectable()
 export class GroupsService {
@@ -53,12 +61,29 @@ export class GroupsService {
     return mapGroupToGroupResponse(group);
   }
 
-  async listMyGroups(currentUser: CurrentUser): Promise<GroupResponseDto[]> {
-    const groups = await this.groupRepository.findGroupsByActiveUserId(
-      currentUser.id,
+  async listMyGroups(
+    currentUser: CurrentUser,
+    query: ListGroupsRequestDto,
+  ): Promise<GroupListResponseDto> {
+    const page = query.page ?? DEFAULT_GROUP_LIST_PAGE;
+    const limit = query.limit ?? DEFAULT_GROUP_LIST_LIMIT;
+    const [groups, total] = await this.groupRepository.findGroupsByActiveUserId(
+      {
+        userId: currentUser.id,
+        skip: (page - 1) * limit,
+        take: limit,
+      },
     );
 
-    return groups.map((group) => mapGroupToGroupResponse(group));
+    return {
+      items: groups.map((group) => mapGroupToGroupResponse(group)),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getGroupDetail(
