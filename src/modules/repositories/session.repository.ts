@@ -30,7 +30,10 @@ export class SessionRepository extends Repository<Session> {
     });
   }
 
-  findByIdAndUserId(sessionId: string, userId: string): Promise<Session | null> {
+  findByIdAndUserId(
+    sessionId: string,
+    userId: string,
+  ): Promise<Session | null> {
     return this.findOne({
       where: {
         id: sessionId,

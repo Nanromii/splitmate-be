@@ -137,9 +137,10 @@ export class AuthService {
   async listSessions(
     currentUser: CurrentUser,
   ): Promise<AuthSessionResponseDto[]> {
-    const sessions = await this.sessionRepository.findByUserIdOrderByCreatedAtDesc(
-      currentUser.id,
-    );
+    const sessions =
+      await this.sessionRepository.findByUserIdOrderByCreatedAtDesc(
+        currentUser.id,
+      );
 
     return sessions.map((session) => mapSessionToAuthSessionResponse(session));
   }
