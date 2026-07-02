@@ -48,6 +48,7 @@ export class ExpensesService {
     const group = await this.findGroupForActiveMember(groupId, currentUser.id);
     this.assertEqualSplitType(dto.splitType);
     const title = this.normalizeRequiredTitle(dto.title);
+    this.assertPositiveAmount(dto.amount);
     const participantIds = this.normalizeParticipantIds(dto.participantIds);
 
     await this.assertPayerAndParticipantsAreActiveMembers(
@@ -113,6 +114,10 @@ export class ExpensesService {
     const paidByUserId = dto.paidByUserId ?? existingExpense.paidById;
     const amount =
       dto.amount !== undefined ? dto.amount : Number(existingExpense.amount);
+
+    if (dto.amount !== undefined) {
+      this.assertPositiveAmount(dto.amount);
+    }
 
     if (!paidByUserId) {
       throw new BadRequestException(
@@ -305,6 +310,14 @@ export class ExpensesService {
     }
 
     return participantIds;
+  }
+
+  private assertPositiveAmount(amount: number): void {
+    if (amount <= 0) {
+      throw new BadRequestException(
+        EXPENSE_ERROR_MESSAGES.EXPENSE_AMOUNT_INVALID,
+      );
+    }
   }
 
   private calculateEqualSplits(
