@@ -7,7 +7,7 @@
 - Connection config nằm trong `src/configs/database.config.ts`
 - `autoLoadEntities: true`
 - `synchronize: true`
-- Auth/session/group data access hiện đi qua custom repository methods trong `src/modules/repositories`, thay vì để service tự nhúng query conditions và `QueryBuilder`.
+- Auth/session/group/expense data access hiện đi qua custom repository methods trong `src/modules/repositories`, thay vì để service tự nhúng query conditions, transaction và `QueryBuilder`.
 
 ## Entities/tables chính
 
@@ -50,7 +50,7 @@
 Triển khai một phần.
 
 - `src/database/base.entity.ts` định nghĩa `deleted_at`.
-- `Group`, `GroupMember`, `User` và `Session` extend local `src/database/base.entity.ts`.
+- `Expense`, `ExpenseSplit`, `Group`, `GroupMember`, `User` và `Session` extend local `src/database/base.entity.ts`.
 - Một số entity khác hiện import `BaseEntity` từ `typeorm`, nên soft delete chưa nhất quán trên toàn source.
 
 ## Audit columns
@@ -84,12 +84,38 @@ Triển khai một phần.
 
 `role` dùng `GroupRole` hiện có `OWNER`, `ADMIN`, `MEMBER`. `status` dùng `GroupMemberStatus` hiện có `ACTIVE`, `LEFT`.
 
+## Columns cho expense management
+
+`expenses` hiện có các field chính:
+
+- `id`
+- `group_id`
+- `paid_by`
+- `title`
+- `note`; API expose field này dưới tên `description`
+- `amount`
+- `currency`
+- `split_type`
+- `expense_date`
+- audit fields từ local base entity
+
+`expense_splits` hiện có các field chính:
+
+- `id`
+- `expense_id`
+- `user_id`
+- `amount`
+- audit fields từ local base entity
+
+`split_type` dùng `ExpenseSplitType`. Source hiện chỉ định nghĩa và hỗ trợ `EQUAL`.
+
 ## Hành vi cascade
 
 - Hard delete `Group`: các row `GroupMember`, `Expense` và `Settlement` liên quan cascade theo relation metadata.
 - API `DELETE /groups/:groupId` hiện soft delete group bằng `deleted_at`, không hard delete.
 - API `POST /groups/:groupId/leave` hiện đánh dấu membership là `LEFT` và set `deleted_at` cho row `group_members`.
-- Xóa `Expense`: các row `ExpenseSplit` liên quan cascade.
+- API `DELETE /groups/:groupId/expenses/:expenseId` hiện soft delete expense và soft delete các row `ExpenseSplit` liên quan.
+- Hard delete `Expense`: các row `ExpenseSplit` liên quan cascade.
 - Xóa `User`: các row `GroupMember`, `ExpenseSplit`, `DeviceToken`, `Notification`, `Session` và `EmailVerification` liên quan cascade; `Group.owner`, `Expense.paidBy`, `Settlement.fromUser` và `Settlement.toUser` được set `NULL`.
 
 ## Index/unique constraints
@@ -97,6 +123,7 @@ Triển khai một phần.
 - `users.email`: unique index `uq_users_email`
 - `users(provider, provider_account_id)`: unique index `uq_users_provider_account`
 - `group_members(group_id, user_id)`: unique index `uq_group_members_group_user`
+- `expenses.expense_date`: index `idx_expenses_expense_date`
 - `expense_splits(expense_id, user_id)`: unique index `uq_expense_splits_expense_user`
 - `device_tokens(user_id, token)`: unique index `uq_device_tokens_user_token`
 - `audit_logs(entity_type, entity_id)`: composite index `idx_audit_logs_entity`
@@ -106,7 +133,10 @@ Triển khai một phần.
 - `sessions.last_activity_at`: index `idx_sessions_last_activity_at`
 - Một số index đơn khác nằm trên các column kiểu foreign key như `group_id`, `user_id`, `owner_id`, `paid_by`, `from_user_id`, `to_user_id`, `entity_id` và `uploaded_by`.
 
-Ghi chú: unique index `group_members(group_id, user_id)` hiện tránh một user có nhiều row membership trong cùng group. Khi owner thêm lại user từng rời nhóm, repository tái kích hoạt row membership cũ thay vì tạo row mới.
+Ghi chú:
+
+- Unique index `group_members(group_id, user_id)` hiện tránh một user có nhiều row membership trong cùng group. Khi owner thêm lại user từng rời nhóm, repository tái kích hoạt row membership cũ thay vì tạo row mới.
+- Unique index `expense_splits(expense_id, user_id)` hiện tránh một user có nhiều split trong cùng expense. Khi cập nhật participant list, repository soft delete split cũ không còn dùng và tái kích hoạt split đã tồn tại nếu user được thêm lại.
 
 ## Columns cho auth/session
 

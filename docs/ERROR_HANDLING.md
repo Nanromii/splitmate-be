@@ -16,6 +16,7 @@
   - `forbidNonWhitelisted: true`
 - Auth request DTO đã dùng `class-validator`.
 - Group request DTO đã dùng `class-validator`.
+- Expense request DTO đã dùng `class-validator`.
 - Request DTO cho domain khác Đang chờ bổ sung.
 
 ## Exception filter
@@ -24,7 +25,7 @@ Chưa triển khai.
 
 ## Quy ước business error
 
-Triển khai một phần cho auth và groups bằng NestJS built-in exceptions. Chưa có custom error-code envelope.
+Triển khai một phần cho auth, groups và expenses bằng NestJS built-in exceptions. Chưa có custom error-code envelope.
 
 ## Quy ước message
 
@@ -33,6 +34,8 @@ Triển khai một phần cho auth và groups bằng NestJS built-in exceptions.
 - Message thông tin/thành công auth nằm trong `src/common/messages/INFO.ts`.
 - Message lỗi group nằm trong `src/common/messages/ERROR.ts`.
 - Message thông tin/thành công group nằm trong `src/common/messages/INFO.ts`.
+- Message lỗi expense nằm trong `src/common/messages/ERROR.ts`.
+- Message thông tin/thành công expense nằm trong `src/common/messages/INFO.ts`.
 - Service/controller/guard/repository không hardcode message trả client.
 
 ## Error code dùng chung nếu có
@@ -78,6 +81,23 @@ Groups hiện trả NestJS default exception response cho các case:
 - Owner chuyển quyền cho chính mình: `400 Bad Request`
 - Owner chuyển quyền cho user không phải active member của group: `400 Bad Request`
 - Thêm user không tồn tại vào group: `404 Not Found`
+
+## Các trường hợp lỗi expense
+
+Expenses hiện trả NestJS default exception response cho các case:
+
+- Thiếu hoặc sai bearer token: `401 Unauthorized`
+- `groupId` hoặc `expenseId` path parameter không hợp lệ: `400 Bad Request`
+- Group không tồn tại hoặc đã bị soft delete: `404 Not Found`
+- Current user không phải active member của group: `403 Forbidden`
+- Expense không tồn tại, không thuộc group hoặc đã bị soft delete: `404 Not Found`
+- Title rỗng sau khi trim: `400 Bad Request`
+- Amount nhỏ hơn hoặc bằng `0`: `400 Bad Request`
+- Participant list rỗng: `400 Bad Request`
+- Participant list có user trùng nhau: `400 Bad Request`
+- Payer không phải active member của group: `400 Bad Request`
+- Participant không phải active member của group: `400 Bad Request`
+- Split type khác `EQUAL`: `400 Bad Request`
 
 ## Giả định
 

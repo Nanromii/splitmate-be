@@ -28,6 +28,7 @@
 - Unit test hiện dùng Nest `TestingModule`.
 - `src/app.controller.spec.ts` dùng real `AppService`.
 - Auth tests mock repository methods, JWT signing/verification, `ConfigService`, Google token verification và ESM-only `uuid` dependency.
+- Expense tests mock repository methods và ESM-only `uuid` dependency.
 
 ## Nên test gì
 
@@ -71,6 +72,21 @@
 - Chặn transfer ownership cho chính owner hiện tại.
 - Chặn transfer ownership cho user không phải active member.
 
+## Expenses coverage hiện tại
+
+- Tạo expense equal split thành công và tính split theo participant list.
+- Equal split có làm tròn vẫn bảo toàn tổng amount.
+- Non-member không tạo được expense trong group.
+- Chặn payer không phải active member.
+- Chặn participant không phải active member.
+- Chặn participant trùng nhau.
+- Chặn amount nhỏ hơn hoặc bằng `0`.
+- Lấy danh sách expense của group.
+- Lấy detail expense kèm splits.
+- Update amount/participants sẽ tính lại splits.
+- Update basic fields không thay splits nếu input không đổi amount/payer/participants.
+- Delete expense gọi soft delete expense và splits.
+
 ## Giả định
 
-- Test hiện đã được cập nhật khỏi hành vi của starter template cho các phần auth liên quan. Các domain module ngoài auth vẫn cần bổ sung test khi được triển khai.
+- Test hiện đã được cập nhật khỏi hành vi của starter template cho các phần auth liên quan. Các domain module ngoài auth, groups và expenses vẫn cần bổ sung test khi được triển khai.

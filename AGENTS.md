@@ -4,8 +4,8 @@
 
 - Repository này là NestJS backend cho domain SplitMate.
 - Source hiện vẫn ở giai đoạn scaffold sớm.
-- Phần đã triển khai gồm bootstrap, config, enums, entities, custom repositories, auth chỉ hỗ trợ Google login với JWT/session management và group management gồm membership, pagination và transfer owner.
-- Các business module như expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
+- Phần đã triển khai gồm bootstrap, config, enums, entities, custom repositories, auth chỉ hỗ trợ Google login với JWT/session management, group management gồm membership/pagination/transfer owner và expense management với equal split.
+- Các business module như settlements, interceptors và middleware vẫn Chưa triển khai.
 - `UsersModule` và `SessionsModule` hiện chủ yếu là scaffold; workflow user/session đang được xử lý trong `AuthModule`.
 - `src/common/messages` là nơi gom shared message constants trả về client.
 - `src/common/interfaces` và `src/common/types` là nơi gom shared interface/type theo domain.
@@ -20,7 +20,7 @@
 - Giữ docs và code khớp với implementation hiện tại, kể cả khi implementation còn thiếu.
 - Giữ auth chỉ hỗ trợ Google login trừ khi user yêu cầu rõ ràng phương thức khác.
 - Không thêm username/password login, password reset hoặc email verification endpoints nếu chưa được yêu cầu.
-- Không hardcode message trả về client trong service/controller/guard/repository. Message auth/group phải lấy từ `src/common/messages/ERROR.ts` hoặc `INFO.ts`.
+- Không hardcode message trả về client trong service/controller/guard/repository. Message auth/group/expense phải lấy từ `src/common/messages/ERROR.ts` hoặc `INFO.ts`.
 - Preserve entity table names, enum values và relation settings trừ khi user yêu cầu đổi.
 - Nêu rõ inconsistency thật trong codebase thay vì âm thầm chuẩn hóa.
 - Với query có `where`, `order`, `relations`, `select` hoặc `QueryBuilder`, ưu tiên đặt trong repository method có tên thể hiện ý nghĩa nghiệp vụ thay vì để trong service.
@@ -41,7 +41,7 @@
 - `src/common/enums`: enum dùng chung cho entities.
 - `src/common/types`: shared type dùng chung, gom theo domain như `auth.type.ts`.
 - `src/common/interfaces`: shared interface dùng chung, gom theo domain như `auth.interface.ts`.
-- `src/common/messages`: shared message constants trả về client, hiện đang gom auth/group messages tại đây.
+- `src/common/messages`: shared message constants trả về client, hiện đang gom auth/group/expense messages tại đây.
 - `src/database`: entity definitions và local shared base entity.
 - `src/modules/repositories`: custom repository classes và repository module.
 - `src/modules/auth`: Google login, JWT tokens, session management, auth guard, request/response DTO, mapper và Google token verification.
@@ -50,6 +50,9 @@
 - `src/modules/groups`: group management endpoints, DTO, service, mapper và membership/owner authorization ở service.
 - `src/modules/groups/dto/request`: DTO nhận input cho group management.
 - `src/modules/groups/dto/response`: DTO trả response cho group management.
+- `src/modules/expenses`: expense equal split endpoints, DTO, service, mapper và membership validation ở service.
+- `src/modules/expenses/dto/request`: DTO nhận input cho expense management.
+- `src/modules/expenses/dto/response`: DTO trả response cho expense management.
 - `src/redis`: Chưa triển khai.
 - `test`: e2e tests và Jest e2e config.
 

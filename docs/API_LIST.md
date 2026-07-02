@@ -13,6 +13,7 @@ Authorization: Bearer <accessToken>
 - Runtime hiện dùng default NestJS response shape, chưa có global response wrapper.
 - Validation hiện dùng global `ValidationPipe` với `whitelist`, `transform` và `forbidNonWhitelisted`.
 - Pagination hiện chỉ triển khai cho `GET /groups`.
+- Expense split hiện chỉ hỗ trợ `EQUAL`.
 
 ## Auth APIs
 
@@ -100,10 +101,67 @@ Chuyển quyền chủ nhóm:
 - `GET /groups` chỉ trả nhóm mà current user là active member và không trả group đã soft delete.
 - `DELETE /groups/:groupId` hiện soft delete group, không hard delete.
 
+## Expense APIs
+
+| Method   | Path                                   | Auth   | Mục đích                                 | Request chính                                                                                           | Response chính                       |
+| -------- | -------------------------------------- | ------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `POST`   | `/groups/:groupId/expenses`            | Bearer | Tạo expense trong group bằng equal split | `title`, `amount`, `paidByUserId`, `participantIds`, optional `description`, `expenseDate`, `splitType` | Expense detail kèm splits            |
+| `GET`    | `/groups/:groupId/expenses`            | Bearer | Lấy danh sách expense trong group        | `groupId` là UUID v7                                                                                    | Danh sách expense không phân trang   |
+| `GET`    | `/groups/:groupId/expenses/:expenseId` | Bearer | Lấy chi tiết expense                     | `groupId`, `expenseId` là UUID v7                                                                       | Expense detail kèm splits            |
+| `PATCH`  | `/groups/:groupId/expenses/:expenseId` | Bearer | Cập nhật expense                         | Optional `title`, `description`, `amount`, `paidByUserId`, `participantIds`, `expenseDate`, `splitType` | Expense detail kèm splits sau update |
+| `DELETE` | `/groups/:groupId/expenses/:expenseId` | Bearer | Xóa mềm expense và splits liên quan      | `groupId`, `expenseId` là UUID v7                                                                       | Message xóa expense thành công       |
+
+### Request mẫu
+
+Tạo expense equal split:
+
+```json
+{
+  "title": "Dinner",
+  "description": "Team dinner after workshop",
+  "amount": 100000,
+  "paidByUserId": "01980000-0000-7000-8000-000000000001",
+  "participantIds": [
+    "01980000-0000-7000-8000-000000000001",
+    "01980000-0000-7000-8000-000000000002",
+    "01980000-0000-7000-8000-000000000003"
+  ],
+  "expenseDate": "2026-07-02T10:00:00.000Z",
+  "splitType": "EQUAL"
+}
+```
+
+Cập nhật expense và tính lại splits:
+
+```json
+{
+  "amount": 120000,
+  "participantIds": [
+    "01980000-0000-7000-8000-000000000001",
+    "01980000-0000-7000-8000-000000000002"
+  ]
+}
+```
+
+### Ghi chú Expense
+
+- Tất cả expense APIs yêu cầu current user là active member của group.
+- `paidByUserId` và toàn bộ `participantIds` phải là active members của group.
+- `amount` phải lớn hơn `0`.
+- `participantIds` không được rỗng và không được trùng user.
+- `splitType` hiện chỉ hỗ trợ `EQUAL`; nếu không truyền thì mặc định dùng `EQUAL`.
+- Equal split chia số nguyên theo tổng amount; phần dư được cộng `+1` lần lượt cho các participant đầu tiên để tổng split luôn bằng amount.
+- Currency của expense lấy từ currency hiện tại của group.
+- Field `description` trong API đang map vào column `note` của entity.
+- `GET /groups/:groupId/expenses` hiện chưa có pagination.
+- `DELETE /groups/:groupId/expenses/:expenseId` hiện soft delete expense và splits liên quan.
+
 ## APIs chưa triển khai
 
-- Expense APIs: Chưa triển khai.
-- Expense split APIs: Chưa triển khai.
 - Settlement APIs: Chưa triển khai.
+- Balance/simplified debt APIs: Chưa triển khai.
+- Custom split APIs ngoài `EQUAL`: Chưa triển khai.
 - Redis/application cache APIs: Chưa triển khai.
+- File upload APIs: Chưa triển khai.
+- Notification APIs: Chưa triển khai.
 - Middleware/interceptor custom APIs hoặc behavior: Chưa triển khai.

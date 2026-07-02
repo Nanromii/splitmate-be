@@ -2,7 +2,7 @@
 
 ## Tổng quan dự án
 
-SplitMate là NestJS backend cho domain chia sẻ chi phí. Source hiện có bootstrap, environment/database configuration, domain entities, custom repositories, Google-only authentication với JWT access/refresh tokens, session management và group management gồm membership, pagination và transfer owner. Shared auth/group messages, shared auth type/interface và repository query convention hiện được gom về `src/common` và `src/modules/repositories`. Các business module như expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
+SplitMate là NestJS backend cho domain chia sẻ chi phí. Source hiện có bootstrap, environment/database configuration, domain entities, custom repositories, Google-only authentication với JWT access/refresh tokens, session management, group management gồm membership/pagination/transfer owner và expense management với equal split. Shared auth/group/expense messages, shared auth type/interface và repository query convention hiện được gom về `src/common` và `src/modules/repositories`. Các business module như settlements, interceptors và middleware vẫn Chưa triển khai.
 
 ## Công nghệ
 
@@ -81,7 +81,8 @@ Trạng thái hiện tại:
 - Swagger đã được cấu hình trong `src/main.ts`.
 - Auth endpoints đã triển khai dưới `/api/v1/auth`.
 - Group management endpoints đã triển khai dưới `/api/v1/groups`.
-- Expense, split và settlement endpoints Đang chờ bổ sung.
+- Expense equal split endpoints đã triển khai dưới `/api/v1/groups/:groupId/expenses`.
+- Settlement endpoints Đang chờ bổ sung.
 
 ## Cấu trúc dự án
 
@@ -98,6 +99,7 @@ splitmate/
 │  ├─ database/
 │  ├─ modules/
 │  │  ├─ auth/
+│  │  ├─ expenses/
 │  │  ├─ groups/
 │  │  ├─ repositories/
 │  │  ├─ sessions/
@@ -118,7 +120,7 @@ splitmate/
 
 - Tài liệu chi tiết nằm trong `docs/`.
 - `docker-compose.yml` định nghĩa PostgreSQL và Redis cho local development.
-- Auth/group message trả client được gom trong `src/common/messages`.
+- Auth/group/expense message trả client được gom trong `src/common/messages`.
 - Shared auth type/interface được gom trong `src/common/types/auth.type.ts` và `src/common/interfaces/auth.interface.ts`.
 - `pnpm build` hiện pass.
 - `pnpm test` hiện pass.
