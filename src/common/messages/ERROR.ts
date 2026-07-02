@@ -20,6 +20,8 @@ export const GROUP_ERROR_MESSAGES = {
   GROUP_NOT_FOUND: 'Không tìm thấy nhóm.',
   GROUP_FORBIDDEN: 'Bạn không có quyền truy cập nhóm này.',
   GROUP_OWNER_REQUIRED: 'Chỉ chủ nhóm mới có quyền thực hiện thao tác này.',
+  GROUP_NAME_REQUIRED: 'Tên nhóm không được để trống.',
+  GROUP_CURRENCY_INVALID: 'Đơn vị tiền tệ của nhóm không hợp lệ.',
   GROUP_MEMBER_NOT_FOUND: 'Không tìm thấy thành viên trong nhóm.',
   GROUP_OWNER_CANNOT_LEAVE:
     'Chủ nhóm không thể rời nhóm khi chưa chuyển quyền sở hữu.',

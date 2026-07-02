@@ -10,6 +10,7 @@ import { RepositoriesModule } from './modules/repositories/repositories.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
+import { GroupsModule } from './modules/groups/groups.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 
     RepositoriesModule,
     AuthModule,
+    GroupsModule,
     UsersModule,
     SessionsModule,
   ],
