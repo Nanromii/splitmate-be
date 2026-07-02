@@ -5,3 +5,10 @@ export const AUTH_INFO_MESSAGES = {
   LOGOUT_ALL_SUCCESS: 'Đăng xuất khỏi tất cả thiết bị thành công.',
   SESSION_REVOKED_SUCCESS: 'Thu hồi phiên đăng nhập thành công.',
 } as const;
+
+export const GROUP_INFO_MESSAGES = {
+  GROUP_CREATED: 'Tạo nhóm thành công.',
+  GROUP_UPDATED: 'Cập nhật nhóm thành công.',
+  GROUP_DELETED: 'Xóa nhóm thành công.',
+  GROUP_LEFT: 'Rời nhóm thành công.',
+} as const;

@@ -15,3 +15,13 @@ export const AUTH_ERROR_MESSAGES = {
   UNSUPPORTED_TOKEN_DURATION: 'Cấu hình thời hạn token không được hỗ trợ.',
   UNSUPPORTED_TOKEN_DURATION_UNIT: 'Đơn vị thời hạn token không được hỗ trợ.',
 } as const;
+
+export const GROUP_ERROR_MESSAGES = {
+  GROUP_NOT_FOUND: 'Không tìm thấy nhóm.',
+  GROUP_FORBIDDEN: 'Bạn không có quyền truy cập nhóm này.',
+  GROUP_OWNER_REQUIRED: 'Chỉ chủ nhóm mới có quyền thực hiện thao tác này.',
+  GROUP_MEMBER_NOT_FOUND: 'Không tìm thấy thành viên trong nhóm.',
+  GROUP_OWNER_CANNOT_LEAVE:
+    'Chủ nhóm không thể rời nhóm khi chưa chuyển quyền sở hữu.',
+  GROUP_ALREADY_DELETED: 'Nhóm đã bị xóa.',
+} as const;

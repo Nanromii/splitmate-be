@@ -1,4 +1,5 @@
 export * from './group-role.enum';
+export * from './group-member-status.enum';
 export * from './settlement-status.enum';
 export * from './device-platform.enum';
 export * from './audit-action.enum';

@@ -1,12 +1,12 @@
 import {
   Entity,
   Index,
-  BaseEntity,
   Column,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { GroupRole } from '../common/enums';
+import { GroupMemberStatus, GroupRole } from '../common/enums';
+import { BaseEntity } from './base.entity';
 import { Group } from './group.entity';
 import { User } from './user.entity';
 
@@ -33,6 +33,13 @@ export class GroupMember extends BaseEntity {
     default: GroupRole.MEMBER,
   })
   role: GroupRole;
+
+  @Column({
+    type: 'enum',
+    enum: GroupMemberStatus,
+    default: GroupMemberStatus.ACTIVE,
+  })
+  status: GroupMemberStatus;
 
   @ManyToOne(() => Group, (group) => group.members, {
     onDelete: 'CASCADE',

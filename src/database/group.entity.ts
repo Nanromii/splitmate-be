@@ -11,6 +11,7 @@ import { BaseEntity } from './base.entity';
 import { GroupMember } from './group-member.entity';
 import { Expense } from './expense.entity';
 import { Settlement } from './settlement.entity';
+import { Currency } from '../common/enums';
 
 @Entity('groups')
 export class Group extends BaseEntity {
@@ -31,6 +32,13 @@ export class Group extends BaseEntity {
     type: 'text',
   })
   avatarUrl?: string;
+
+  @Column({
+    type: 'enum',
+    enum: Currency,
+    default: Currency.VND,
+  })
+  currency: Currency;
 
   @Index('idx_groups_owner_id')
   @Column({
