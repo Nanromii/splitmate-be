@@ -56,7 +56,7 @@
 ## Groups coverage hiện tại
 
 - Tạo group thành công và current user được trả role `OWNER`.
-- Lấy danh sách group của current user.
+- Lấy danh sách group của current user kèm pagination metadata.
 - Active member xem detail group thành công.
 - Non-member không xem được group detail.
 - Member thường không update/delete được group.
@@ -65,6 +65,11 @@
 - Owner không được leave group.
 - Member thường leave group thành công.
 - Lấy danh sách active members và không trả field nhạy cảm của user.
+- Owner thêm member thành công.
+- Chặn thêm user đã là active member.
+- Owner transfer ownership cho active member thành công.
+- Chặn transfer ownership cho chính owner hiện tại.
+- Chặn transfer ownership cho user không phải active member.
 
 ## Giả định
 

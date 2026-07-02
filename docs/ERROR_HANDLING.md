@@ -74,6 +74,10 @@ Groups hiện trả NestJS default exception response cho các case:
 - Current user không phải active member của group: `403 Forbidden`
 - Current user không phải owner nhưng gọi API cần owner: `403 Forbidden`
 - Owner gọi leave group: `400 Bad Request`
+- Owner thêm user đã là active member: `400 Bad Request`
+- Owner chuyển quyền cho chính mình: `400 Bad Request`
+- Owner chuyển quyền cho user không phải active member của group: `400 Bad Request`
+- Thêm user không tồn tại vào group: `404 Not Found`
 
 ## Giả định
 

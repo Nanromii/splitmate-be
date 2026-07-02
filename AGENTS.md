@@ -4,7 +4,7 @@
 
 - Repository này là NestJS backend cho domain SplitMate.
 - Source hiện vẫn ở giai đoạn scaffold sớm.
-- Phần đã triển khai gồm bootstrap, config, enums, entities, custom repositories, auth chỉ hỗ trợ Google login với JWT/session management và group management cơ bản.
+- Phần đã triển khai gồm bootstrap, config, enums, entities, custom repositories, auth chỉ hỗ trợ Google login với JWT/session management và group management gồm membership, pagination và transfer owner.
 - Các business module như expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
 - `UsersModule` và `SessionsModule` hiện chủ yếu là scaffold; workflow user/session đang được xử lý trong `AuthModule`.
 - `src/common/messages` là nơi gom shared message constants trả về client.

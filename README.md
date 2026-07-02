@@ -2,7 +2,7 @@
 
 ## Tổng quan dự án
 
-SplitMate là NestJS backend cho domain chia sẻ chi phí. Source hiện có bootstrap, environment/database configuration, domain entities, custom repositories, Google-only authentication với JWT access/refresh tokens, session management và group management cơ bản. Shared auth/group messages, shared auth type/interface và repository query convention hiện được gom về `src/common` và `src/modules/repositories`. Các business module như expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
+SplitMate là NestJS backend cho domain chia sẻ chi phí. Source hiện có bootstrap, environment/database configuration, domain entities, custom repositories, Google-only authentication với JWT access/refresh tokens, session management và group management gồm membership, pagination và transfer owner. Shared auth/group messages, shared auth type/interface và repository query convention hiện được gom về `src/common` và `src/modules/repositories`. Các business module như expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
 
 ## Công nghệ
 

@@ -31,6 +31,8 @@ Group management endpoints đã triển khai dưới `/groups`:
 - `DELETE /groups/:groupId`
 - `POST /groups/:groupId/leave`
 - `GET /groups/:groupId/members`
+- `POST /groups/:groupId/members`
+- `POST /groups/:groupId/transfer-owner`
 
 Naming cho expense, split, settlement và business endpoint khác Đang chờ bổ sung.
 
@@ -76,9 +78,28 @@ Authorization: Bearer <accessToken>
 
 ## Định dạng phân trang
 
-Chưa triển khai.
+Triển khai một phần cho `GET /groups`.
 
-`GET /groups` hiện trả danh sách đơn giản, sort theo `createdAt DESC` từ repository. Pagination sẽ bổ sung sau khi có convention rõ ràng.
+Query hiện hỗ trợ:
+
+- `page`: số trang, mặc định `1`.
+- `limit`: số lượng item trên mỗi trang, mặc định `20`, tối đa `100`.
+
+Response hiện có dạng:
+
+```json
+{
+  "items": [],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 0,
+    "totalPages": 0
+  }
+}
+```
+
+`GET /groups` sort theo `createdAt DESC` từ repository.
 
 ## Quy ước Swagger
 

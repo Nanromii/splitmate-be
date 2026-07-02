@@ -106,7 +106,7 @@ Triển khai một phần.
 - `sessions.last_activity_at`: index `idx_sessions_last_activity_at`
 - Một số index đơn khác nằm trên các column kiểu foreign key như `group_id`, `user_id`, `owner_id`, `paid_by`, `from_user_id`, `to_user_id`, `entity_id` và `uploaded_by`.
 
-Ghi chú: unique index `group_members(group_id, user_id)` hiện tránh một user có nhiều row membership trong cùng group. Rejoin sau khi leave Đang chờ bổ sung vì task hiện tại chưa implement invite/rejoin.
+Ghi chú: unique index `group_members(group_id, user_id)` hiện tránh một user có nhiều row membership trong cùng group. Khi owner thêm lại user từng rời nhóm, repository tái kích hoạt row membership cũ thay vì tạo row mới.
 
 ## Columns cho auth/session
 
