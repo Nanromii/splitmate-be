@@ -1,13 +1,13 @@
 import {
   Entity,
-  BaseEntity,
   Index,
   Column,
   ManyToOne,
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { Currency } from '../common/enums';
+import { Currency, ExpenseSplitType } from '../common/enums';
+import { BaseEntity } from './base.entity';
 import { Group } from './group.entity';
 import { User } from './user.entity';
 import { ExpenseSplit } from './expense-split.entity';
@@ -51,6 +51,21 @@ export class Expense extends BaseEntity {
     default: Currency.VND,
   })
   currency: Currency;
+
+  @Column({
+    name: 'split_type',
+    type: 'enum',
+    enum: ExpenseSplitType,
+    default: ExpenseSplitType.EQUAL,
+  })
+  splitType: ExpenseSplitType;
+
+  @Index('idx_expenses_expense_date')
+  @Column({
+    name: 'expense_date',
+    type: 'timestamptz',
+  })
+  expenseDate: Date;
 
   @ManyToOne(() => Group, (group) => group.expenses, {
     onDelete: 'CASCADE',

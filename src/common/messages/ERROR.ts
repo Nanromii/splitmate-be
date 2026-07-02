@@ -31,3 +31,18 @@ export const GROUP_ERROR_MESSAGES = {
   GROUP_OWNER_TRANSFER_SELF: 'Bạn đang là chủ nhóm này.',
   GROUP_ALREADY_DELETED: 'Nhóm đã bị xóa.',
 } as const;
+
+export const EXPENSE_ERROR_MESSAGES = {
+  EXPENSE_NOT_FOUND: 'Không tìm thấy khoản chi.',
+  EXPENSE_FORBIDDEN: 'Bạn không có quyền truy cập khoản chi này.',
+  EXPENSE_AMOUNT_INVALID: 'Số tiền khoản chi phải lớn hơn 0.',
+  EXPENSE_TITLE_REQUIRED: 'Tên khoản chi không được để trống.',
+  EXPENSE_PARTICIPANTS_REQUIRED:
+    'Danh sách người tham gia không được để trống.',
+  EXPENSE_PARTICIPANTS_DUPLICATED:
+    'Danh sách người tham gia không được chứa người dùng trùng lặp.',
+  EXPENSE_PAYER_NOT_GROUP_MEMBER: 'Người trả tiền phải là thành viên của nhóm.',
+  EXPENSE_PARTICIPANT_NOT_GROUP_MEMBER:
+    'Tất cả người tham gia phải là thành viên của nhóm.',
+  EXPENSE_SPLIT_TYPE_UNSUPPORTED: 'Kiểu chia tiền này chưa được hỗ trợ.',
+} as const;

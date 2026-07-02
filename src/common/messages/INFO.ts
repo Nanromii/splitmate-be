@@ -14,3 +14,9 @@ export const GROUP_INFO_MESSAGES = {
   GROUP_MEMBER_ADDED: 'Thêm thành viên vào nhóm thành công.',
   GROUP_OWNER_TRANSFERRED: 'Chuyển quyền sở hữu nhóm thành công.',
 } as const;
+
+export const EXPENSE_INFO_MESSAGES = {
+  EXPENSE_CREATED: 'Tạo khoản chi thành công.',
+  EXPENSE_UPDATED: 'Cập nhật khoản chi thành công.',
+  EXPENSE_DELETED: 'Xóa khoản chi thành công.',
+} as const;

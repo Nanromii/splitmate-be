@@ -50,6 +50,25 @@ export class GroupMemberRepository extends Repository<GroupMember> {
     });
   }
 
+  findActiveMembersByGroupIdAndUserIds(
+    groupId: string,
+    userIds: string[],
+  ): Promise<GroupMember[]> {
+    if (userIds.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return this.createQueryBuilder('member')
+      .leftJoinAndSelect('member.user', 'user')
+      .where('member.group_id = :groupId', { groupId })
+      .andWhere('member.user_id IN (:...userIds)', { userIds })
+      .andWhere('member.status = :status', {
+        status: GroupMemberStatus.ACTIVE,
+      })
+      .andWhere('member.deleted_at IS NULL')
+      .getMany();
+  }
+
   async isGroupOwner(groupId: string, userId: string): Promise<boolean> {
     const ownerCount = await this.count({
       where: {

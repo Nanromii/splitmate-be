@@ -2,6 +2,7 @@ export * from './group-role.enum';
 export * from './group-member-status.enum';
 export * from './settlement-status.enum';
 export * from './device-platform.enum';
+export * from './expense-split-type.enum';
 export * from './audit-action.enum';
 export * from './currency.enum';
 export * from './file-entity-type.enum';

@@ -1,11 +1,5 @@
-import {
-  Entity,
-  Index,
-  BaseEntity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Index, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { Expense } from './expense.entity';
 import { User } from './user.entity';
 
