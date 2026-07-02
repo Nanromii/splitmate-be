@@ -11,7 +11,11 @@ import {
 } from '../../common/messages';
 import type { CurrentUser } from '../../common/types';
 import { Group, GroupMember, User } from '../../database';
-import { GroupMemberRepository, GroupRepository } from '../repositories';
+import {
+  GroupMemberRepository,
+  GroupRepository,
+  UserRepository,
+} from '../repositories';
 import { GroupsService } from './groups.service';
 
 describe('GroupsService', () => {
@@ -23,12 +27,17 @@ describe('GroupsService', () => {
     findGroupByIdForActiveMember: jest.Mock;
     save: jest.Mock;
     softDeleteGroupById: jest.Mock;
+    transferOwnership: jest.Mock;
   };
   let groupMemberRepository: {
+    addOrReactivateMember: jest.Mock;
     findActiveMemberByGroupIdAndUserId: jest.Mock;
     findActiveMembersByGroupId: jest.Mock;
     isGroupOwner: jest.Mock;
     markMemberAsLeft: jest.Mock;
+  };
+  let userRepository: {
+    findById: jest.Mock;
   };
 
   const now = new Date('2026-07-02T10:00:00.000Z');
@@ -84,12 +93,17 @@ describe('GroupsService', () => {
       findGroupByIdForActiveMember: jest.fn(),
       save: jest.fn(),
       softDeleteGroupById: jest.fn(),
+      transferOwnership: jest.fn(),
     };
     groupMemberRepository = {
+      addOrReactivateMember: jest.fn(),
       findActiveMemberByGroupIdAndUserId: jest.fn(),
       findActiveMembersByGroupId: jest.fn(),
       isGroupOwner: jest.fn(),
       markMemberAsLeft: jest.fn(),
+    };
+    userRepository = {
+      findById: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -102,6 +116,10 @@ describe('GroupsService', () => {
         {
           provide: GroupMemberRepository,
           useValue: groupMemberRepository,
+        },
+        {
+          provide: UserRepository,
+          useValue: userRepository,
         },
       ],
     }).compile();
@@ -131,16 +149,28 @@ describe('GroupsService', () => {
 
   it('should list groups for the current active member', async () => {
     groupRepository.findGroupsByActiveUserId.mockResolvedValue([
-      makeGroup(GroupRole.MEMBER),
+      [makeGroup(GroupRole.MEMBER)],
+      1,
     ]);
 
-    const result = await service.listMyGroups(currentUser);
+    const result = await service.listMyGroups(currentUser, {
+      page: 2,
+      limit: 10,
+    });
 
-    expect(groupRepository.findGroupsByActiveUserId).toHaveBeenCalledWith(
-      ownerId,
-    );
-    expect(result).toHaveLength(1);
-    expect(result[0].role).toBe(GroupRole.MEMBER);
+    expect(groupRepository.findGroupsByActiveUserId).toHaveBeenCalledWith({
+      userId: ownerId,
+      skip: 10,
+      take: 10,
+    });
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].role).toBe(GroupRole.MEMBER);
+    expect(result.meta).toEqual({
+      page: 2,
+      limit: 10,
+      total: 1,
+      totalPages: 1,
+    });
   });
 
   it('should return group detail for an active member', async () => {
@@ -282,5 +312,112 @@ describe('GroupsService', () => {
       },
     ]);
     expect(result[0]).not.toHaveProperty('passwordHash');
+  });
+
+  it('should add a member when the current user is owner', async () => {
+    const member = makeMember(GroupRole.MEMBER, memberId);
+    groupRepository.findGroupById.mockResolvedValue(makeGroup());
+    groupMemberRepository.isGroupOwner.mockResolvedValue(true);
+    userRepository.findById.mockResolvedValue(member.user);
+    groupMemberRepository.findActiveMemberByGroupIdAndUserId
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(member);
+    groupMemberRepository.addOrReactivateMember.mockResolvedValue(member);
+
+    const result = await service.addMember(
+      groupId,
+      {
+        userId: memberId,
+      },
+      currentUser,
+    );
+
+    expect(groupMemberRepository.addOrReactivateMember).toHaveBeenCalledWith({
+      groupId,
+      userId: memberId,
+      actorId: ownerId,
+    });
+    expect(result.userId).toBe(memberId);
+  });
+
+  it('should block adding an already active member', async () => {
+    const member = makeMember(GroupRole.MEMBER, memberId);
+    groupRepository.findGroupById.mockResolvedValue(makeGroup());
+    groupMemberRepository.isGroupOwner.mockResolvedValue(true);
+    userRepository.findById.mockResolvedValue(member.user);
+    groupMemberRepository.findActiveMemberByGroupIdAndUserId.mockResolvedValue(
+      member,
+    );
+
+    await expect(
+      service.addMember(
+        groupId,
+        {
+          userId: memberId,
+        },
+        currentUser,
+      ),
+    ).rejects.toThrow(GROUP_ERROR_MESSAGES.GROUP_MEMBER_ALREADY_ACTIVE);
+  });
+
+  it('should transfer ownership to an active member', async () => {
+    groupRepository.findGroupById.mockResolvedValue(makeGroup());
+    groupMemberRepository.isGroupOwner.mockResolvedValue(true);
+    groupMemberRepository.findActiveMemberByGroupIdAndUserId.mockResolvedValue(
+      makeMember(GroupRole.MEMBER, memberId),
+    );
+    groupRepository.transferOwnership.mockResolvedValue(undefined);
+
+    const result = await service.transferOwner(
+      groupId,
+      {
+        newOwnerUserId: memberId,
+      },
+      currentUser,
+    );
+
+    expect(groupRepository.transferOwnership).toHaveBeenCalledWith({
+      groupId,
+      currentOwnerId: ownerId,
+      newOwnerId: memberId,
+    });
+    expect(result).toEqual({
+      message: GROUP_INFO_MESSAGES.GROUP_OWNER_TRANSFERRED,
+    });
+  });
+
+  it('should block transferring ownership to self', async () => {
+    groupRepository.findGroupById.mockResolvedValue(makeGroup());
+    groupMemberRepository.isGroupOwner.mockResolvedValue(true);
+
+    await expect(
+      service.transferOwner(
+        groupId,
+        {
+          newOwnerUserId: ownerId,
+        },
+        currentUser,
+      ),
+    ).rejects.toThrow(GROUP_ERROR_MESSAGES.GROUP_OWNER_TRANSFER_SELF);
+  });
+
+  it('should block transferring ownership to a non-member', async () => {
+    groupRepository.findGroupById.mockResolvedValue(makeGroup());
+    groupMemberRepository.isGroupOwner.mockResolvedValue(true);
+    groupMemberRepository.findActiveMemberByGroupIdAndUserId.mockResolvedValue(
+      null,
+    );
+
+    await expect(
+      service.transferOwner(
+        groupId,
+        {
+          newOwnerUserId: memberId,
+        },
+        currentUser,
+      ),
+    ).rejects.toThrow(
+      GROUP_ERROR_MESSAGES.GROUP_OWNER_TRANSFER_TARGET_REQUIRED,
+    );
   });
 });
