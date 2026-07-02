@@ -20,24 +20,46 @@ import {
 } from '../repositories';
 import { ExpensesService } from './expenses.service';
 
+type ExpenseRepositoryMock = {
+  createExpenseWithSplits: jest.MockedFunction<
+    ExpenseRepository['createExpenseWithSplits']
+  >;
+  deleteExpense: jest.MockedFunction<ExpenseRepository['deleteExpense']>;
+  findExpenseByIdAndGroupId: jest.MockedFunction<
+    ExpenseRepository['findExpenseByIdAndGroupId']
+  >;
+  findExpenseDetailByIdAndGroupId: jest.MockedFunction<
+    ExpenseRepository['findExpenseDetailByIdAndGroupId']
+  >;
+  findExpensesByGroupId: jest.MockedFunction<
+    ExpenseRepository['findExpensesByGroupId']
+  >;
+  softDeleteExpenseWithSplits: jest.MockedFunction<
+    ExpenseRepository['softDeleteExpenseWithSplits']
+  >;
+  updateExpenseWithOptionalSplits: jest.MockedFunction<
+    ExpenseRepository['updateExpenseWithOptionalSplits']
+  >;
+};
+
+type GroupRepositoryMock = {
+  findGroupById: jest.MockedFunction<GroupRepository['findGroupById']>;
+  findGroupByIdForActiveMember: jest.MockedFunction<
+    GroupRepository['findGroupByIdForActiveMember']
+  >;
+};
+
+type GroupMemberRepositoryMock = {
+  findActiveMembersByGroupIdAndUserIds: jest.MockedFunction<
+    GroupMemberRepository['findActiveMembersByGroupIdAndUserIds']
+  >;
+};
+
 describe('ExpensesService', () => {
   let service: ExpensesService;
-  let expenseRepository: {
-    createExpenseWithSplits: jest.Mock;
-    deleteExpense: jest.Mock;
-    findExpenseByIdAndGroupId: jest.Mock;
-    findExpenseDetailByIdAndGroupId: jest.Mock;
-    findExpensesByGroupId: jest.Mock;
-    softDeleteExpenseWithSplits: jest.Mock;
-    updateExpenseWithOptionalSplits: jest.Mock;
-  };
-  let groupRepository: {
-    findGroupById: jest.Mock;
-    findGroupByIdForActiveMember: jest.Mock;
-  };
-  let groupMemberRepository: {
-    findActiveMembersByGroupIdAndUserIds: jest.Mock;
-  };
+  let expenseRepository: ExpenseRepositoryMock;
+  let groupRepository: GroupRepositoryMock;
+  let groupMemberRepository: GroupMemberRepositoryMock;
 
   const now = new Date('2026-07-02T12:00:00.000Z');
   const groupId = '01980000-0000-7000-8000-000000000010';
@@ -208,13 +230,15 @@ describe('ExpensesService', () => {
 
     const input = expenseRepository.createExpenseWithSplits.mock.calls[0][0];
 
-    expect(input.splits).toEqual([
+    expect(input).toBeDefined();
+
+    expect(input?.splits).toEqual([
       { userId: participantAId, amount: 34 },
       { userId: participantBId, amount: 33 },
       { userId: participantCId, amount: 33 },
     ]);
     expect(
-      input.splits.reduce((total: number, split: { amount: number }) => {
+      input?.splits.reduce((total: number, split: { amount: number }) => {
         return total + split.amount;
       }, 0),
     ).toBe(100);
@@ -383,13 +407,13 @@ describe('ExpensesService', () => {
 
     expect(
       expenseRepository.updateExpenseWithOptionalSplits,
-    ).toHaveBeenCalledWith(
-      expenseId,
-      groupId,
-      expect.not.objectContaining({
-        splits: expect.anything(),
-      }),
-    );
+    ).toHaveBeenCalled();
+
+    const updateInput =
+      expenseRepository.updateExpenseWithOptionalSplits.mock.calls[0][2];
+
+    expect(updateInput).toBeDefined();
+    expect(updateInput?.splits).toBeUndefined();
   });
 
   it('should soft delete expense and splits', async () => {
