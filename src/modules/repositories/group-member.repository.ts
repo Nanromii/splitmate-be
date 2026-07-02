@@ -78,4 +78,35 @@ export class GroupMemberRepository extends Repository<GroupMember> {
       },
     );
   }
+
+  async addOrReactivateMember(params: {
+    groupId: string;
+    userId: string;
+    actorId: string;
+  }): Promise<GroupMember> {
+    const existingMember = await this.findMemberByGroupIdAndUserId(
+      params.groupId,
+      params.userId,
+    );
+
+    if (existingMember) {
+      existingMember.role = GroupRole.MEMBER;
+      existingMember.status = GroupMemberStatus.ACTIVE;
+      existingMember.deletedAt = null;
+      existingMember.updatedBy = params.actorId;
+      existingMember.deletedBy = null;
+
+      return this.save(existingMember);
+    }
+
+    const member = this.create({
+      groupId: params.groupId,
+      userId: params.userId,
+      role: GroupRole.MEMBER,
+      status: GroupMemberStatus.ACTIVE,
+      createdBy: params.actorId,
+    });
+
+    return this.save(member);
+  }
 }

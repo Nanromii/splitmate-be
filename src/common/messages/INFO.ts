@@ -11,4 +11,6 @@ export const GROUP_INFO_MESSAGES = {
   GROUP_UPDATED: 'Cập nhật nhóm thành công.',
   GROUP_DELETED: 'Xóa nhóm thành công.',
   GROUP_LEFT: 'Rời nhóm thành công.',
+  GROUP_MEMBER_ADDED: 'Thêm thành viên vào nhóm thành công.',
+  GROUP_OWNER_TRANSFERRED: 'Chuyển quyền sở hữu nhóm thành công.',
 } as const;

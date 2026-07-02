@@ -23,7 +23,11 @@ export const GROUP_ERROR_MESSAGES = {
   GROUP_NAME_REQUIRED: 'Tên nhóm không được để trống.',
   GROUP_CURRENCY_INVALID: 'Đơn vị tiền tệ của nhóm không hợp lệ.',
   GROUP_MEMBER_NOT_FOUND: 'Không tìm thấy thành viên trong nhóm.',
+  GROUP_MEMBER_ALREADY_ACTIVE: 'Người dùng đã là thành viên của nhóm.',
   GROUP_OWNER_CANNOT_LEAVE:
     'Chủ nhóm không thể rời nhóm khi chưa chuyển quyền sở hữu.',
+  GROUP_OWNER_TRANSFER_TARGET_REQUIRED:
+    'Người nhận quyền sở hữu phải là thành viên đang hoạt động của nhóm.',
+  GROUP_OWNER_TRANSFER_SELF: 'Bạn đang là chủ nhóm này.',
   GROUP_ALREADY_DELETED: 'Nhóm đã bị xóa.',
 } as const;

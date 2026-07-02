@@ -11,15 +11,21 @@ import {
 } from '../../common/messages';
 import type { CurrentUser } from '../../common/types';
 import { Group } from '../../database';
-import { GroupMemberRepository, GroupRepository } from '../repositories';
+import {
+  GroupMemberRepository,
+  GroupRepository,
+  UserRepository,
+} from '../repositories';
 import {
   mapGroupMemberToGroupMemberResponse,
   mapGroupToGroupDetailResponse,
   mapGroupToGroupResponse,
 } from './groups.mapper';
 import {
+  AddGroupMemberRequestDto,
   CreateGroupRequestDto,
   ListGroupsRequestDto,
+  TransferGroupOwnerRequestDto,
   UpdateGroupRequestDto,
 } from './dto/request';
 import {
@@ -38,6 +44,7 @@ export class GroupsService {
   constructor(
     private readonly groupRepository: GroupRepository,
     private readonly groupMemberRepository: GroupMemberRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async createGroup(
@@ -183,6 +190,90 @@ export class GroupsService {
       await this.groupMemberRepository.findActiveMembersByGroupId(groupId);
 
     return members.map((member) => mapGroupMemberToGroupMemberResponse(member));
+  }
+
+  async addMember(
+    groupId: string,
+    dto: AddGroupMemberRequestDto,
+    currentUser: CurrentUser,
+  ): Promise<GroupMemberResponseDto> {
+    await this.findExistingGroup(groupId);
+    await this.assertCurrentUserIsOwner(groupId, currentUser.id);
+
+    const user = await this.userRepository.findById(dto.userId);
+
+    if (!user) {
+      throw new NotFoundException(GROUP_ERROR_MESSAGES.GROUP_MEMBER_NOT_FOUND);
+    }
+
+    const existingMember =
+      await this.groupMemberRepository.findActiveMemberByGroupIdAndUserId(
+        groupId,
+        dto.userId,
+      );
+
+    if (existingMember) {
+      throw new BadRequestException(
+        GROUP_ERROR_MESSAGES.GROUP_MEMBER_ALREADY_ACTIVE,
+      );
+    }
+
+    await this.groupMemberRepository.addOrReactivateMember({
+      groupId,
+      userId: dto.userId,
+      actorId: currentUser.id,
+    });
+
+    const member =
+      await this.groupMemberRepository.findActiveMemberByGroupIdAndUserId(
+        groupId,
+        dto.userId,
+      );
+
+    if (!member) {
+      throw new NotFoundException(GROUP_ERROR_MESSAGES.GROUP_MEMBER_NOT_FOUND);
+    }
+
+    member.user = user;
+
+    return mapGroupMemberToGroupMemberResponse(member);
+  }
+
+  async transferOwner(
+    groupId: string,
+    dto: TransferGroupOwnerRequestDto,
+    currentUser: CurrentUser,
+  ): Promise<GroupActionResponseDto> {
+    await this.findExistingGroup(groupId);
+    await this.assertCurrentUserIsOwner(groupId, currentUser.id);
+
+    if (dto.newOwnerUserId === currentUser.id) {
+      throw new BadRequestException(
+        GROUP_ERROR_MESSAGES.GROUP_OWNER_TRANSFER_SELF,
+      );
+    }
+
+    const newOwner =
+      await this.groupMemberRepository.findActiveMemberByGroupIdAndUserId(
+        groupId,
+        dto.newOwnerUserId,
+      );
+
+    if (!newOwner) {
+      throw new BadRequestException(
+        GROUP_ERROR_MESSAGES.GROUP_OWNER_TRANSFER_TARGET_REQUIRED,
+      );
+    }
+
+    await this.groupRepository.transferOwnership({
+      groupId,
+      currentOwnerId: currentUser.id,
+      newOwnerId: dto.newOwnerUserId,
+    });
+
+    return {
+      message: GROUP_INFO_MESSAGES.GROUP_OWNER_TRANSFERRED,
+    };
   }
 
   private async findExistingGroup(groupId: string): Promise<Group> {

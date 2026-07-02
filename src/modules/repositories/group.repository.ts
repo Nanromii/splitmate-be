@@ -111,4 +111,50 @@ export class GroupRepository extends Repository<Group> {
       },
     );
   }
+
+  async transferOwnership(params: {
+    groupId: string;
+    currentOwnerId: string;
+    newOwnerId: string;
+  }): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      await manager.update(
+        Group,
+        {
+          id: params.groupId,
+        },
+        {
+          ownerId: params.newOwnerId,
+          updatedBy: params.currentOwnerId,
+        },
+      );
+
+      await manager.update(
+        GroupMember,
+        {
+          groupId: params.groupId,
+          userId: params.currentOwnerId,
+          role: GroupRole.OWNER,
+          status: GroupMemberStatus.ACTIVE,
+        },
+        {
+          role: GroupRole.MEMBER,
+          updatedBy: params.currentOwnerId,
+        },
+      );
+
+      await manager.update(
+        GroupMember,
+        {
+          groupId: params.groupId,
+          userId: params.newOwnerId,
+          status: GroupMemberStatus.ACTIVE,
+        },
+        {
+          role: GroupRole.OWNER,
+          updatedBy: params.currentOwnerId,
+        },
+      );
+    });
+  }
 }

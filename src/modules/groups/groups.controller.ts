@@ -26,8 +26,10 @@ import { CurrentAuthUser } from '../../common/decorators';
 import type { CurrentUser } from '../../common/types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
+  AddGroupMemberRequestDto,
   CreateGroupRequestDto,
   ListGroupsRequestDto,
+  TransferGroupOwnerRequestDto,
   UpdateGroupRequestDto,
 } from './dto/request';
 import {
@@ -137,5 +139,41 @@ export class GroupsController {
     @CurrentAuthUser() currentUser: CurrentUser,
   ): Promise<GroupMemberResponseDto[]> {
     return this.groupsService.listMembers(groupId, currentUser);
+  }
+
+  @Post(':groupId/members')
+  @ApiOperation({ summary: 'Thêm hoặc kích hoạt lại thành viên trong nhóm' })
+  @ApiBody({ type: AddGroupMemberRequestDto })
+  @ApiCreatedResponse({ type: GroupMemberResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Thiếu hoặc sai bearer token.' })
+  @ApiForbiddenResponse({ description: 'Chỉ chủ nhóm được thêm thành viên.' })
+  @ApiNotFoundResponse({ description: 'Không tìm thấy nhóm hoặc người dùng.' })
+  @ApiBadRequestResponse({
+    description: 'Người dùng đã là thành viên đang hoạt động của nhóm.',
+  })
+  addMember(
+    @Param('groupId', new ParseUUIDPipe({ version: '7' })) groupId: string,
+    @Body() dto: AddGroupMemberRequestDto,
+    @CurrentAuthUser() currentUser: CurrentUser,
+  ): Promise<GroupMemberResponseDto> {
+    return this.groupsService.addMember(groupId, dto, currentUser);
+  }
+
+  @Post(':groupId/transfer-owner')
+  @ApiOperation({ summary: 'Chuyển quyền chủ nhóm cho thành viên khác' })
+  @ApiBody({ type: TransferGroupOwnerRequestDto })
+  @ApiOkResponse({ type: GroupActionResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Thiếu hoặc sai bearer token.' })
+  @ApiForbiddenResponse({ description: 'Chỉ chủ nhóm được chuyển quyền.' })
+  @ApiNotFoundResponse({ description: 'Không tìm thấy nhóm.' })
+  @ApiBadRequestResponse({
+    description: 'Người nhận quyền không hợp lệ hoặc không phải thành viên.',
+  })
+  transferOwner(
+    @Param('groupId', new ParseUUIDPipe({ version: '7' })) groupId: string,
+    @Body() dto: TransferGroupOwnerRequestDto,
+    @CurrentAuthUser() currentUser: CurrentUser,
+  ): Promise<GroupActionResponseDto> {
+    return this.groupsService.transferOwner(groupId, dto, currentUser);
   }
 }
