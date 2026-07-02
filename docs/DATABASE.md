@@ -7,7 +7,7 @@
 - Connection config nằm trong `src/configs/database.config.ts`
 - `autoLoadEntities: true`
 - `synchronize: true`
-- Auth/session data access hiện đi qua custom repository methods trong `src/modules/repositories`, thay vì để service tự nhúng query conditions và `QueryBuilder`.
+- Auth/session/group data access hiện đi qua custom repository methods trong `src/modules/repositories`, thay vì để service tự nhúng query conditions và `QueryBuilder`.
 
 ## Entities/tables chính
 
@@ -50,7 +50,7 @@
 Triển khai một phần.
 
 - `src/database/base.entity.ts` định nghĩa `deleted_at`.
-- `Group`, `User` và `Session` extend local `src/database/base.entity.ts`.
+- `Group`, `GroupMember`, `User` và `Session` extend local `src/database/base.entity.ts`.
 - Một số entity khác hiện import `BaseEntity` từ `typeorm`, nên soft delete chưa nhất quán trên toàn source.
 
 ## Audit columns
@@ -61,9 +61,34 @@ Triển khai một phần.
 - `AuditLog` tự định nghĩa `id` và `created_at`.
 - Do mixed `BaseEntity` imports, shared audit columns chưa áp dụng nhất quán cho mọi entity.
 
+## Columns cho group management
+
+`groups` hiện có các field chính:
+
+- `id`
+- `name`
+- `description`
+- `avatar_url`
+- `currency`
+- `owner_id`
+- audit fields từ local base entity
+
+`group_members` hiện có các field chính:
+
+- `id`
+- `group_id`
+- `user_id`
+- `role`
+- `status`
+- audit fields từ local base entity
+
+`role` dùng `GroupRole` hiện có `OWNER`, `ADMIN`, `MEMBER`. `status` dùng `GroupMemberStatus` hiện có `ACTIVE`, `LEFT`.
+
 ## Hành vi cascade
 
-- Xóa `Group`: các row `GroupMember`, `Expense` và `Settlement` liên quan cascade.
+- Hard delete `Group`: các row `GroupMember`, `Expense` và `Settlement` liên quan cascade theo relation metadata.
+- API `DELETE /groups/:groupId` hiện soft delete group bằng `deleted_at`, không hard delete.
+- API `POST /groups/:groupId/leave` hiện đánh dấu membership là `LEFT` và set `deleted_at` cho row `group_members`.
 - Xóa `Expense`: các row `ExpenseSplit` liên quan cascade.
 - Xóa `User`: các row `GroupMember`, `ExpenseSplit`, `DeviceToken`, `Notification`, `Session` và `EmailVerification` liên quan cascade; `Group.owner`, `Expense.paidBy`, `Settlement.fromUser` và `Settlement.toUser` được set `NULL`.
 
@@ -80,6 +105,8 @@ Triển khai một phần.
 - `sessions.expires_at`: index `idx_sessions_expires_at`
 - `sessions.last_activity_at`: index `idx_sessions_last_activity_at`
 - Một số index đơn khác nằm trên các column kiểu foreign key như `group_id`, `user_id`, `owner_id`, `paid_by`, `from_user_id`, `to_user_id`, `entity_id` và `uploaded_by`.
+
+Ghi chú: unique index `group_members(group_id, user_id)` hiện tránh một user có nhiều row membership trong cùng group. Rejoin sau khi leave Đang chờ bổ sung vì task hiện tại chưa implement invite/rejoin.
 
 ## Columns cho auth/session
 

@@ -2,7 +2,7 @@
 
 ## Tổng quan dự án
 
-SplitMate là NestJS backend cho domain chia sẻ chi phí. Source hiện có bootstrap, environment/database configuration, domain entities, custom repositories và Google-only authentication với JWT access/refresh tokens và session management. Shared auth messages, shared auth type/interface và auth query convention hiện được gom về `src/common` và `src/modules/repositories`. Các business module như groups, expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
+SplitMate là NestJS backend cho domain chia sẻ chi phí. Source hiện có bootstrap, environment/database configuration, domain entities, custom repositories, Google-only authentication với JWT access/refresh tokens, session management và group management cơ bản. Shared auth/group messages, shared auth type/interface và repository query convention hiện được gom về `src/common` và `src/modules/repositories`. Các business module như expenses, settlements, interceptors và middleware vẫn Chưa triển khai.
 
 ## Công nghệ
 
@@ -80,7 +80,8 @@ Trạng thái hiện tại:
 
 - Swagger đã được cấu hình trong `src/main.ts`.
 - Auth endpoints đã triển khai dưới `/api/v1/auth`.
-- Các domain endpoint khác Đang chờ bổ sung.
+- Group management endpoints đã triển khai dưới `/api/v1/groups`.
+- Expense, split và settlement endpoints Đang chờ bổ sung.
 
 ## Cấu trúc dự án
 
@@ -97,6 +98,7 @@ splitmate/
 │  ├─ database/
 │  ├─ modules/
 │  │  ├─ auth/
+│  │  ├─ groups/
 │  │  ├─ repositories/
 │  │  ├─ sessions/
 │  │  └─ users/
@@ -116,7 +118,7 @@ splitmate/
 
 - Tài liệu chi tiết nằm trong `docs/`.
 - `docker-compose.yml` định nghĩa PostgreSQL và Redis cho local development.
-- Auth message trả client được gom trong `src/common/messages`.
+- Auth/group message trả client được gom trong `src/common/messages`.
 - Shared auth type/interface được gom trong `src/common/types/auth.type.ts` và `src/common/interfaces/auth.interface.ts`.
 - `pnpm build` hiện pass.
 - `pnpm test` hiện pass.

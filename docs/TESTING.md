@@ -53,6 +53,19 @@
 - Invalid access token bị từ chối.
 - E2E verify routing `POST /api/v1/auth/refresh` và bearer-token enforcement của `GET /api/v1/auth/me`.
 
+## Groups coverage hiện tại
+
+- Tạo group thành công và current user được trả role `OWNER`.
+- Lấy danh sách group của current user.
+- Active member xem detail group thành công.
+- Non-member không xem được group detail.
+- Member thường không update/delete được group.
+- Owner update group thành công.
+- Owner soft delete group thành công.
+- Owner không được leave group.
+- Member thường leave group thành công.
+- Lấy danh sách active members và không trả field nhạy cảm của user.
+
 ## Giả định
 
 - Test hiện đã được cập nhật khỏi hành vi của starter template cho các phần auth liên quan. Các domain module ngoài auth vẫn cần bổ sung test khi được triển khai.
